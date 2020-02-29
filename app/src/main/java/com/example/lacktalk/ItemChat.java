@@ -7,8 +7,18 @@ public class ItemChat {
     private String imagePath;
     private String name;
     private String text;
-    private Date time;
+    private String time;
+    private boolean isme;
 
+    public ItemChat(String a,String b,String c,String d,boolean e){
+        imagePath = a; name = b; text = c; time = d; isme = e;
+    }
+    public boolean getIsme(){
+        return isme;
+    }
+    public void setIsme(boolean isme){
+        this.isme = isme;
+    }
     public String getImagePath() {
         return imagePath;
     }
@@ -33,11 +43,11 @@ public class ItemChat {
         this.text = text;
     }
 
-    public Date getTime() {
+    public String getTime() {
         return time;
     }
 
-    public void setTime(Date time) {
+    public void setTime(String time) {
         this.time = time;
     }
 
