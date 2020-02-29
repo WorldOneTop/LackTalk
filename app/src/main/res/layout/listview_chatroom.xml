@@ -3,10 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal">
+    <View
+        android:id="@+id/listview_interval"
+        android:layout_width="1dp"
+        android:layout_height="13dp"
+        android:visibility="gone"></View>
 <RelativeLayout
     android:id="@+id/listview_left"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_below="@id/listview_interval">
     <ImageView
         android:id="@+id/item_profile"
         android:layout_alignParentLeft="true"
@@ -52,7 +58,8 @@
     <RelativeLayout
         android:id="@+id/listview_right"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_below="@id/listview_interval">
 
         <TextView
             android:id="@+id/item_textR"

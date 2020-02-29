@@ -69,6 +69,7 @@ public class AdapterChat extends BaseAdapter {
             item_profile.setVisibility(View.VISIBLE);
             item_text.setBackgroundResource(listViewItem.getIsme() ? R.drawable.rightchat : R.drawable.leftchat);
             item_name.setVisibility(View.VISIBLE);
+            convertView.findViewById(R.id.listview_interval).setVisibility(View.VISIBLE);
         }
         else{
             item_profile.setVisibility(View.INVISIBLE);
