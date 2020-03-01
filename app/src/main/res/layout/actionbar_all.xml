@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--친구탭과 채팅리스트탭은 가운데 차이, 채팅방 안 탭 3가지 구현-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="55dp">
+    <RelativeLayout
+        android:id="@+id/action_bar_friend"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+        <TextView
+            android:text="친구"
+            android:layout_alignParentLeft="true"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            android:textStyle="bold"/>
+        <ImageView
+            android:id="@+id/icon_setting"
+            android:adjustViewBounds="true"
+            android:layout_marginRight="18dp"
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/icon_settings"/>
+        <ImageView
+            android:id="@+id/icon_add"
+            android:adjustViewBounds="true"
+            android:layout_marginRight="18dp"
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_toLeftOf="@id/icon_setting"
+            android:src="@drawable/icon_add" />
+        <ImageView
+            android:id="@+id/icon_search"
+            android:adjustViewBounds="true"
+            android:layout_marginRight="18dp"
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_toLeftOf="@id/icon_add"
+            android:src="@drawable/icon_search"/>
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/action_bar_chatRoom"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="#1A000000">
+    <ImageView
+        android:id="@+id/icon_back"
+        android:layout_width="23dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:layout_centerInParent="true"
+        android:layout_alignParentLeft="true"
+        android:src="@drawable/icon_back"
+        android:layout_marginLeft="10dp"
+        />
+        <TextView
+            android:text="Test ID"
+            android:id="@+id/icon_name"
+            android:layout_centerInParent="true"
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_toRightOf="@id/icon_back"
+            android:layout_toLeftOf="@id/icon_search_room"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:id="@+id/icon_menu"
+            android:adjustViewBounds="true"
+            android:layout_marginRight="18dp"
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/icon_menu"/>
+        <ImageView
+            android:id="@+id/icon_search_room"
+            android:layout_width="23dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:layout_centerInParent="true"
+            android:layout_toLeftOf="@id/icon_menu"
+            android:layout_marginRight="18dp"
+            android:src="@drawable/icon_search"
+            android:layout_marginLeft="10dp"
+            />
+    </RelativeLayout>
+
+</LinearLayout>

@@ -59,13 +59,14 @@ public class AdapterChat extends BaseAdapter {
 
         // 아이템 내 각 위젯에 데이터 반영
 //        item_profile.setImageBitmap(BitmapFactory.decodeFile(listViewItem.getImagePath()));
-        item_profile.setImageResource(R.drawable.defaultimg);
 
         item_name.setText(listViewItem.getName());
         item_text.setText(listViewItem.getText());
-
+//설정이 계속 유지되는 듯 그래서 상태 바뀔때마다 바꾼것 모두 재설정
         //프사및닉넴 및 꼬퉁이 전용
         if(position==0 || listViewItemList.get(position-1).getIsme() != listViewItem.getIsme()){//처음이거나 한사람의 말의 시작
+            item_profile.setImageResource(R.drawable.defaultimg);
+            item_profile.setMaxHeight(3000);
             item_profile.setVisibility(View.VISIBLE);
             item_text.setBackgroundResource(listViewItem.getIsme() ? R.drawable.rightchat : R.drawable.leftchat);
             item_name.setVisibility(View.VISIBLE);
