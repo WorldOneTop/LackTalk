@@ -2,11 +2,11 @@
 <!--친구탭과 채팅리스트탭은 가운데 차이, 채팅방 안 탭 3가지 구현-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="55dp">
+    android:layout_height="wrap_content">
     <RelativeLayout
         android:id="@+id/action_bar_friend"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="55dp"
         android:visibility="gone">
         <TextView
             android:text="친구"
@@ -48,9 +48,8 @@
     <RelativeLayout
         android:id="@+id/action_bar_chatRoom"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        android:background="#1A000000">
+        android:layout_height="55dp"
+        android:visibility="gone">
     <ImageView
         android:id="@+id/icon_back"
         android:layout_width="23dp"
@@ -97,5 +96,8 @@
             android:layout_marginLeft="10dp"
             />
     </RelativeLayout>
-
+<View
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:background="#1A000000"/>
 </LinearLayout>

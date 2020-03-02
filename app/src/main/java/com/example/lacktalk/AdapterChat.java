@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,7 +21,6 @@ public class AdapterChat extends BaseAdapter {
     String[] now_arr;
     // ListViewAdapter의 생성자
     public AdapterChat() {//채팅리스트인지 채팅방안인지 구분 필요
-        now_arr = new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()).split("/");
 
     }
 
@@ -34,6 +34,7 @@ public class AdapterChat extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         final Context context = parent.getContext();
+        now_arr = new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()).split("/");
 
         // "listview_item" Layout을 inflate하여 convertView 참조 획득.
         if (convertView == null) {
@@ -46,31 +47,45 @@ public class AdapterChat extends BaseAdapter {
         TextView item_name = (TextView) convertView.findViewById(R.id.item_name);
         TextView item_text = (TextView) convertView.findViewById(R.id.item_text);
         TextView item_time = (TextView) convertView.findViewById(R.id.item_time);
-        if(!listViewItem.getIsme()) {
+
+        //이 밑 세개는 날짜 보여주기 위해서
+        LinearLayout layout_date = convertView.findViewById(R.id.layout_date);
+        TextView textview_date = convertView.findViewById(R.id.textview_date);
+        layout_date.setVisibility(View.GONE);
+
+        if(!listViewItem.getIsme()) {       // 상대방이 얘기했을때 필요한 뷰 선언
             convertView.findViewById(R.id.listview_left).setVisibility(View.VISIBLE);
             convertView.findViewById(R.id.listview_right).setVisibility(View.GONE);
         }
-        else{
+        else{               //내가얘기했을때 필요한 뷰 선언
             item_text = (TextView) convertView.findViewById(R.id.item_textR);
             item_time = (TextView) convertView.findViewById(R.id.item_timeR);
             convertView.findViewById(R.id.listview_right).setVisibility(View.VISIBLE);
             convertView.findViewById(R.id.listview_left).setVisibility(View.GONE);
         }
 
-        // 아이템 내 각 위젯에 데이터 반영
-//        item_profile.setImageBitmap(BitmapFactory.decodeFile(listViewItem.getImagePath()));
 
         item_name.setText(listViewItem.getName());
         item_text.setText(listViewItem.getText());
 //설정이 계속 유지되는 듯 그래서 상태 바뀔때마다 바꾼것 모두 재설정
-        //프사및닉넴 및 꼬퉁이 전용
-        if(position==0 || listViewItemList.get(position-1).getIsme() != listViewItem.getIsme()){//처음이거나 한사람의 말의 시작
+
+        if(position==0 || !listViewItemList.get(position-1).getTime().substring(0,10).equals(listViewItem.getTime().substring(0,10))){//첫대화이거나 전 대화와 날짜가달랐을때
+            textview_date.setText(dateTypeChange(listViewItem.getTime(),true)) ;
+            layout_date.setVisibility(View.VISIBLE);
+
             item_profile.setImageResource(R.drawable.defaultimg);
             item_profile.setMaxHeight(3000);
             item_profile.setVisibility(View.VISIBLE);
             item_text.setBackgroundResource(listViewItem.getIsme() ? R.drawable.rightchat : R.drawable.leftchat);
             item_name.setVisibility(View.VISIBLE);
-            convertView.findViewById(R.id.listview_interval).setVisibility(View.VISIBLE);
+        }
+        //프사및닉넴 및 꼬퉁이 전용 값설정  및 날짜도
+        else if(listViewItemList.get(position-1).getIsme() != listViewItem.getIsme()){//처음이거나 한사람의 말의 시작
+            item_profile.setImageResource(R.drawable.defaultimg);
+            item_profile.setMaxHeight(3000);
+            item_profile.setVisibility(View.VISIBLE);
+            item_text.setBackgroundResource(listViewItem.getIsme() ? R.drawable.rightchat : R.drawable.leftchat);
+            item_name.setVisibility(View.VISIBLE);
         }
         else{
             item_profile.setVisibility(View.INVISIBLE);
@@ -78,26 +93,23 @@ public class AdapterChat extends BaseAdapter {
             item_text.setBackgroundResource(R.drawable.chat);
             item_name.setVisibility(View.GONE);
         }
-        //시간 전용
+        //시간 전용 값설정
         if(position+1 == listViewItemList.size()){//마지막이니 시간 무조건, out of index 방지
-            item_time.setText(dateTypeChange(listViewItem.getTime()));
+            item_time.setText(dateTypeChange(listViewItem.getTime(),false));
             item_time.setVisibility(View.VISIBLE);
         }
         else if(listViewItemList.get(position+1).getIsme() != listViewItem.getIsme()){//다음 말이 다른사람이 말했을때
-            item_time.setText(dateTypeChange(listViewItem.getTime()));
+            item_time.setText(dateTypeChange(listViewItem.getTime(),false));
             item_time.setVisibility(View.VISIBLE);
         }
         else if(listViewItemList.get(position+1).getTime().equals(listViewItem.getTime())) {//다음 시간이랑 지금이랑 같으면 지금꺼안보이게
             item_time.setVisibility(View.GONE);
-
         }
         else {//위아래시간이 달랐을때
-            item_time.setText(dateTypeChange(listViewItem.getTime()));
+            item_time.setText(dateTypeChange(listViewItem.getTime(),false));
             item_time.setVisibility(View.VISIBLE);
+
         }
-
-
-
 
 
 
@@ -120,13 +132,12 @@ public class AdapterChat extends BaseAdapter {
     public Object getItem(int position) {
         return listViewItemList.get(position) ;
     }
-    //날짜 계산해서 1시간까진 ~분전 , 하루까진 시간으로, 년도안바뀐데까진 월일, 년도바뀌면 년도월일
-    public String dateTypeChange(String date){
+    //날짜 계산해서 하루까진 시간으로, 년도안바뀐데까진 월일, 년도바뀌면 년도월일
+    public String dateTypeChange(String date,boolean is_diff_day){
         String[] str = date.split("/");
-
         if(!now_arr[0].equals(str[0]))
             return str[0]+"."+str[1]+"."+str[2];
-        else if(!now_arr[2].equals(str[2]) && !now_arr[1].equals(str[1]))
+        else if(is_diff_day || !now_arr[2].equals(str[2]) || !now_arr[1].equals(str[1]))
             return str[1]+"월 "+str[2]+"일";
         else {
             int temp = Integer.parseInt(str[3]);
@@ -135,8 +146,9 @@ public class AdapterChat extends BaseAdapter {
             else
                 return (temp != 0 ? temp : 12)+":"+str[4] + " am"  ;
         }
-
     }
-
+    public Object getStatus(int position){
+        return "position : "+position+"  말한사람 : "+listViewItemList.get(position).getIsme()+"\n말한시각 : "+listViewItemList.get(position).getTime()+"\n닉네임 : "+listViewItemList.get(position).getName();
+    }
 
 }

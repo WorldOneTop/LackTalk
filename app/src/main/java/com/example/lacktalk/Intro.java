@@ -47,8 +47,8 @@ public class Intro extends AppCompatActivity {
                     if (!onDraw) {
                         imm.showSoftInput(editText, 0);
                     }
-                    if (getKeyboardHeight(rootLayout) > 300 && !onDraw) { //변화량이 300이 넘으면 키보드 가올라갔다고 간주
-                        HEIGHT_KEYBOARD = getKeyboardHeight(rootLayout);
+                    if (getKeyboardHeight() > 300 && !onDraw) { //변화량이 300이 넘으면 키보드 가올라갔다고 간주
+                        HEIGHT_KEYBOARD = getKeyboardHeight();
                         imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
                         onDraw = true;
                         try {
@@ -99,7 +99,7 @@ public class Intro extends AppCompatActivity {
 
     }
 
-    private int getKeyboardHeight(View targetView) {
+    private int getKeyboardHeight() {
         Rect visibleFrameSize = new Rect();
         rootLayout.getWindowVisibleDisplayFrame(visibleFrameSize);
 
@@ -124,6 +124,7 @@ public class Intro extends AppCompatActivity {
             @Override
             public void run() {
                 Intent intent = new Intent(Intro.this, ChatRoom.class);
+                intent.putExtra("name","Test ID");
                 startActivity(intent);
                 finish();
             }
