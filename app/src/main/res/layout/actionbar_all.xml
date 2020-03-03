@@ -2,37 +2,39 @@
 <!--친구탭과 채팅리스트탭은 가운데 차이, 채팅방 안 탭 3가지 구현-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:paddingRight="18dp"
+    android:paddingLeft="18dp">
     <RelativeLayout
         android:id="@+id/action_bar_friend"
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:visibility="gone">
         <TextView
-            android:text="친구"
+            android:id="@+id/action_bar_main"
+            android:text="채팅방들"
             android:layout_alignParentLeft="true"
             android:layout_centerInParent="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="30sp"
             android:textStyle="bold"/>
+        <!--<ImageView-->
+            <!--android:id="@+id/icon_setting"-->
+            <!--android:adjustViewBounds="true"-->
+            <!--android:layout_marginRight="18dp"-->
+            <!--android:layout_width="25dp"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_centerInParent="true"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:src="@drawable/icon_settings"/>-->
         <ImageView
-            android:id="@+id/icon_setting"
+            android:id="@+id/icon_add"
             android:adjustViewBounds="true"
-            android:layout_marginRight="18dp"
             android:layout_width="25dp"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_alignParentRight="true"
-            android:src="@drawable/icon_settings"/>
-        <ImageView
-            android:id="@+id/icon_add"
-            android:adjustViewBounds="true"
-            android:layout_marginRight="18dp"
-            android:layout_width="25dp"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_toLeftOf="@id/icon_setting"
             android:src="@drawable/icon_add" />
         <ImageView
             android:id="@+id/icon_search"
@@ -58,7 +60,6 @@
         android:layout_centerInParent="true"
         android:layout_alignParentLeft="true"
         android:src="@drawable/icon_back"
-        android:layout_marginLeft="10dp"
         />
         <TextView
             android:text="Test ID"
@@ -78,7 +79,6 @@
         <ImageView
             android:id="@+id/icon_menu"
             android:adjustViewBounds="true"
-            android:layout_marginRight="18dp"
             android:layout_width="25dp"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"

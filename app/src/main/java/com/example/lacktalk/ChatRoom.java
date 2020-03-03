@@ -71,7 +71,7 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
     }
 
     public void init() {
-        //채팅방 위에 액션바(뒤로가기 이름 등등 ) 뷰 선언
+        //채팅방 위에 액션바(뒤로가기 이름 등등 ) 뷰 선언 및 보이게
         View include_layout = findViewById(R.id.include_actionbar);
         include_layout.findViewById(R.id.action_bar_chatRoom).setVisibility(View.VISIBLE);
         include_layout.findViewById(R.id.action_bar_friend).setVisibility(View.GONE);
@@ -80,7 +80,7 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
         imageView_menu = include_layout.findViewById(R.id.icon_menu);
         textView_name = include_layout.findViewById(R.id.icon_name);
 
-        //채팅방 아래 ( edittext, +버튼 등등 ) 뷰 선언
+        //채팅방 아래 ( edittext, +버튼 등등 ) 뷰 선언 및 보이게
         View include_underbar = findViewById(R.id.include_underbar);
         include_underbar.findViewById(R.id.underbar_Room).setVisibility(View.VISIBLE);
         include_underbar.findViewById(R.id.underbar_List).setVisibility(View.GONE);
@@ -210,6 +210,7 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
                 break;
             case R.id.chatroom_drawer_chatOut:
                 Toast.makeText(this,"나가기 클릭, 다이얼로그로 확인받고 나가게하기",Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this,ChatList.class));
                 break;
             case R.id.chatroom_drawer_chatAlarm:
                 if((int)drawer_alarm.getTag() == 1) {

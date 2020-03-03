@@ -1,155 +1,169 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--부모 레이아웃이 드로어일경우 상태바 위로 서랍이 열림-->
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!--부모 레이아웃이 드로어일경우 상태바 위로 서랍이 열림-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-<androidx.drawerlayout.widget.DrawerLayout
-    android:id="@+id/drawerLayout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
-<RelativeLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-<include
-    android:id="@+id/include_actionbar"
-    layout="@layout/actionbar_all"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    />
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_alignParentTop="true"
-        android:text="추가"
-        android:layout_gravity="center"/>
 
-    <ListView
-        android:layout_above="@id/include_underbar"
-        android:layout_below="@id/include_actionbar"
-        android:id="@+id/listView"
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawerLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:listSelector="@android:color/transparent"
-        android:transcriptMode="alwaysScroll"
-        android:divider="@null">
-    </ListView>
+        android:fitsSystemWindows="true">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#1A000000"
-        android:layout_above="@id/include_underbar"
-        android:layout_marginTop="3dp"/>
-    <include
-        android:id="@+id/include_underbar"
-        layout="@layout/underbar_all"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        />
-</RelativeLayout>
-    <RelativeLayout
-        android:id="@+id/drawerLayout_root"
-        android:layout_width="200dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="right"
-        android:background="#f5f5dc"
-        android:paddingLeft="8dp">
-        <TextView
-            android:id="@+id/chatroom_drawer_main"
-            android:layout_alignParentTop="true"
-            android:text="공지사항"
-            android:textSize="15sp"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"/>
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="2px"
-            android:background="#1A000000"
-            android:layout_below="@id/chatroom_drawer_main"
-            android:layout_marginTop="3dp"/>
-        <TextView
-            android:id="@+id/chatroom_drawer_picture"
-            android:layout_below="@id/chatroom_drawer_main"
-            android:text="사진 및 동영상"
-            android:textSize="15sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"/>
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="2px"
-            android:background="#1A000000"
-            android:layout_below="@id/chatroom_drawer_picture"
-            android:layout_marginTop="3dp"/>
-        <TextView
-            android:id="@+id/chatroom_drawer_file"
-            android:layout_below="@id/chatroom_drawer_picture"
-            android:text="파일"
-            android:textSize="15sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"/>
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="2px"
-            android:background="#1A000000"
-            android:layout_below="@id/chatroom_drawer_file"
-            android:layout_marginTop="3dp"/>
-        <ListView
-            android:id="@+id/chatroom_drawer_listview"
-            android:layout_below="@id/chatroom_drawer_file"
-            android:textSize="15sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"
-            android:layout_marginBottom="5dp"/>
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="2px"
-            android:background="#1A000000"
-            android:layout_above="@id/chatroom_drawer_Linear"
-            android:layout_marginTop="3dp"/>
-        <LinearLayout
-            android:id="@+id/chatroom_drawer_Linear"
-            android:layout_alignParentBottom="true"
-            android:layout_width="match_parent"
-            android:layout_height="50dp">
-            <ImageView
-                android:id="@+id/chatroom_drawer_chatOut"
-                android:adjustViewBounds="true"
-                android:layout_width="0dp"
+            android:layout_height="match_parent">
+
+            <include
+                android:id="@+id/include_actionbar"
+                layout="@layout/actionbar_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center"
+                android:text="추가" />
+
+            <ListView
+                android:id="@+id/listView"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:src="@drawable/icon_exit"
-                android:layout_margin="5dp"/>
+                android:layout_above="@id/include_underbar"
+                android:layout_below="@id/include_actionbar"
+                android:divider="@null"
+                android:listSelector="@android:color/transparent"
+                android:transcriptMode="alwaysScroll"></ListView>
+
             <View
-                android:layout_weight="4"
+                android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_width="0dp"/>
-            <ImageView
-                android:id="@+id/chatroom_drawer_chatAlarm"
-                android:adjustViewBounds="true"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:src="@drawable/icon_alarm"
-                android:layout_margin="5dp"/>
-            <ImageView
-                android:id="@+id/chatroom_drawer_chatSetting"
-                android:adjustViewBounds="true"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:src="@drawable/icon_settings"
-                android:layout_margin="5dp"/>
-        </LinearLayout>
-    </RelativeLayout>
-</androidx.drawerlayout.widget.DrawerLayout>
+                android:layout_above="@id/include_underbar"
+                android:layout_marginTop="3dp"
+                android:background="#1A000000" />
+
+            <include
+                android:id="@+id/include_underbar"
+                layout="@layout/underbar_all"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/drawerLayout_root"
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:background="#f5f5dc"
+            android:paddingLeft="8dp">
+
+            <TextView
+                android:id="@+id/chatroom_drawer_main"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="7dp"
+                android:text="공지사항"
+                android:textSize="15sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2px"
+                android:layout_below="@id/chatroom_drawer_main"
+                android:layout_marginTop="3dp"
+                android:background="#1A000000" />
+
+            <TextView
+                android:id="@+id/chatroom_drawer_picture"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/chatroom_drawer_main"
+                android:layout_marginTop="7dp"
+                android:text="사진 및 동영상"
+                android:textSize="15sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2px"
+                android:layout_below="@id/chatroom_drawer_picture"
+                android:layout_marginTop="3dp"
+                android:background="#1A000000" />
+
+            <TextView
+                android:id="@+id/chatroom_drawer_file"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/chatroom_drawer_picture"
+                android:layout_marginTop="7dp"
+                android:text="파일"
+                android:textSize="15sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2px"
+                android:layout_below="@id/chatroom_drawer_file"
+                android:layout_marginTop="3dp"
+                android:background="#1A000000" />
+
+            <ListView
+                android:id="@+id/chatroom_drawer_listview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/chatroom_drawer_file"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="5dp"
+                android:textSize="15sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2px"
+                android:layout_above="@id/chatroom_drawer_Linear"
+                android:layout_marginTop="3dp"
+                android:background="#1A000000" />
+
+            <LinearLayout
+                android:id="@+id/chatroom_drawer_Linear"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_alignParentBottom="true">
+
+                <ImageView
+                    android:id="@+id/chatroom_drawer_chatOut"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/icon_exit" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="4" />
+
+                <ImageView
+                    android:id="@+id/chatroom_drawer_chatAlarm"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/icon_alarm" />
+
+                <ImageView
+                    android:id="@+id/chatroom_drawer_chatSetting"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/icon_settings" />
+            </LinearLayout>
+        </RelativeLayout>
+    </androidx.drawerlayout.widget.DrawerLayout>
 </RelativeLayout>
