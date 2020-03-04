@@ -3,6 +3,36 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/underbar">
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#1A000000" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:orientation="horizontal">
+        <View
+            android:id="@+id/upperline_1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#000"
+            android:visibility="invisible"/>
+        <View
+            android:id="@+id/upperline_2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#000"
+            android:visibility="invisible" />
+        <View
+            android:id="@+id/upperline_3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#000"
+            android:visibility="invisible"/>
+    </LinearLayout>
     <LinearLayout
         android:id="@+id/underbar_List"
         android:layout_width="match_parent"
@@ -11,25 +41,40 @@
         android:visibility="gone">
         <ImageView
             android:id="@+id/icon_friend"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@drawable/icon_friend"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            android:paddingBottom="20dp"
+            android:paddingStart="5dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="5dp"
+            android:background="?attr/selectableItemBackground"/>
         <ImageView
             android:id="@+id/icon_chatList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@drawable/icon_menu"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            android:paddingBottom="20dp"
+            android:paddingStart="5dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="5dp"
+            android:background="?attr/selectableItemBackground"/>
         <ImageView
             android:id="@+id/icon_setting_underbar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@drawable/icon_settings"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            android:paddingBottom="20dp"
+            android:paddingStart="5dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="5dp"
+            android:background="?attr/selectableItemBackground"/>
 
 
     </LinearLayout>
@@ -68,6 +113,7 @@
             android:layout_gravity="center"
             android:src="@drawable/icon_send"/>
     </LinearLayout>
+
 
     <TableLayout
         android:id="@+id/underbar_Table"

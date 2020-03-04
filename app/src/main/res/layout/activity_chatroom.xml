@@ -36,15 +36,9 @@
                 android:layout_above="@id/include_underbar"
                 android:layout_below="@id/include_actionbar"
                 android:divider="@null"
+                android:layout_marginBottom="3dp"
                 android:listSelector="@android:color/transparent"
                 android:transcriptMode="alwaysScroll"></ListView>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_above="@id/include_underbar"
-                android:layout_marginTop="3dp"
-                android:background="#1A000000" />
 
             <include
                 android:id="@+id/include_underbar"

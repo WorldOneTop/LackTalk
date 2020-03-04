@@ -1,46 +1,66 @@
 package com.example.lacktalk;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TableLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Random;
 
 public class ChatList extends AppCompatActivity implements View.OnClickListener{
-    Intent intent;
-    Handler handler;
-    ListView listView;
-    ImageView actionbar_search,actionbar_add,underbar_friend,underbar_list,underbar_setting;
-    TextView actionbar_main;
-
+    private Intent intent;
+    private Handler handler;
+    private ListView listView;
+    private ImageView underbar_friend,underbar_list,underbar_setting;
+    private RelativeLayout relativeLayout;
+    private static final int NUM_PAGE = 3;//3페이지만 구성해놓음
+    private ViewPager pager;
+    PagerAdapter pagerAdapter;
+    private View upperLine1,upperLine2,upperLine3;
+    static ChatList_In_ViewPager[] viewPager_chatList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chat_list);
+        setContentView(R.layout.activity_viewpager);
 
         init();
 
+
+
     }
+
+    //어댑터 안에서 각각의 아이템을 데이터로서 관리한다
+    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+        public ScreenSlidePagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+        @Override
+        public Fragment getItem(int position) {//생성자가 안되다 되다하는 현상 발견으로 인해 만든 안전장치 safeVar
+            return viewPager_chatList[position] = new ChatList_In_ViewPager(getApplicationContext(), position).safeVar(getApplicationContext(), position);
+        }
+        @Override
+        public int getCount() {
+            return NUM_PAGE;
+        }
+    }
+
+
     public void init(){
-        //채팅방 위에 액션바(뒤로가기 이름 등등 ) 뷰 선언 및 보이게
-        View include_layout = findViewById(R.id.include_actionbar);
-        include_layout.findViewById(R.id.action_bar_chatRoom).setVisibility(View.GONE);
-        include_layout.findViewById(R.id.action_bar_friend).setVisibility(View.VISIBLE);
-        actionbar_search = include_layout.findViewById(R.id.icon_search);
-        actionbar_add = include_layout.findViewById(R.id.icon_add);
-        actionbar_main = include_layout.findViewById(R.id.action_bar_main);
+        //페이지마다 보여질 뷰 및 변수 선언
+        pager = findViewById(R.id.pager);
+        viewPager_chatList = new ChatList_In_ViewPager[NUM_PAGE];//관리할수있게 따로 저장
+        pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());//페이지 어뎁터매니저 선언
 
         //채팅방 아래 ( edittext, +버튼 등등 ) 뷰 선언 및 보이게
         View include_underbar = findViewById(R.id.include_underbar);
@@ -49,40 +69,82 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
         underbar_friend = include_underbar.findViewById(R.id.icon_friend);
         underbar_list = include_underbar.findViewById(R.id.icon_chatList);
         underbar_setting = include_underbar.findViewById(R.id.icon_setting_underbar);
+        upperLine1 = findViewById(R.id.upperline_1);
+        upperLine2 = findViewById(R.id.upperline_2);
+        upperLine3 = findViewById(R.id.upperline_3);
+
+
+        //디폴트 설정
+        pager.setAdapter(pagerAdapter);
+        pager.setPageTransformer(true, new ZoomOutPageTransformer());
+        pager.setCurrentItem(1);//현재 화면을 1번째 인덱스로
+        pager.setOffscreenPageLimit(2);//준비해놓는 페이지를 양옆 2개씩으로 oncreateview로 실행
+        upperLine2.setVisibility(View.VISIBLE);//처음은 채팅방들부터 보여지기때문에
 
         init_ClickListener();
+
     }
     public void init_ClickListener(){
-        //액션바 리스너
-        actionbar_search.setOnClickListener(this);
-        actionbar_add.setOnClickListener(this);
         //언더바 리스너
         underbar_friend.setOnClickListener(this);
         underbar_list.setOnClickListener(this);
         underbar_setting.setOnClickListener(this);
 
-    }
+        //페이지이벤트
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+            @Override
+            public void onPageSelected(int position) {
+                switch (position) {
+                    case 0:
+                        upperLine1.setVisibility(View.VISIBLE);
+                        upperLine2.setVisibility(View.INVISIBLE);
+                        upperLine3.setVisibility(View.INVISIBLE);
+                    break;
+                    case 1:
+                        upperLine1.setVisibility(View.INVISIBLE);
+                        upperLine2.setVisibility(View.VISIBLE);
+                        upperLine3.setVisibility(View.INVISIBLE);
+                        break;
+                    case 2:
+                        upperLine1.setVisibility(View.INVISIBLE);
+                        upperLine2.setVisibility(View.INVISIBLE);
+                        upperLine3.setVisibility(View.VISIBLE);
 
+                        break;
+                }
+            }
+            @Override
+            public void onPageScrollStateChanged(int state) {}
+        });
+
+    }
+    static Random random = new Random();
+    public static void randomAdd(){
+        for(int i=0;i<3;i++) {
+            viewPager_chatList[i].addItem("", randomStr(), randomStr());
+        }
+    }
+    public static String randomStr() {
+        int a = random.nextInt(50);
+        String result = "";
+        for (int i = 0; i < a; i++) {
+            result += (char) ((Math.random() * 26) + 97);
+        }
+        return result;
+    }
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-            case R.id.icon_search:
-                Toast.makeText(this,"서치클릭",Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.icon_add:
-                Toast.makeText(this,"친구추가클릭",Toast.LENGTH_SHORT).show();
-                break;
             case R.id.icon_friend:
-                Toast.makeText(this,"친구목록클릭",Toast.LENGTH_SHORT).show();
-                actionbar_main.setText("친구들");
+                pager.setCurrentItem(0);//페이지 넘기는 역할인가봄
                 break;
             case R.id.icon_chatList:
-                Toast.makeText(this,"채팅리스트클릭",Toast.LENGTH_SHORT).show();
-                actionbar_main.setText("채팅방들");
+                pager.setCurrentItem(1);
                 break;
             case R.id.icon_setting_underbar:
-                Toast.makeText(this,"전체설정클릭",Toast.LENGTH_SHORT).show();
-                actionbar_main.setText("설정");
+                pager.setCurrentItem(2);
                 break;
         }
     }

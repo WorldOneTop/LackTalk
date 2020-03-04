@@ -123,9 +123,7 @@ public class Intro extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent = new Intent(Intro.this, ChatRoom.class);
-                intent.putExtra("name","Test ID");
-                startActivity(intent);
+                startActivity(new Intent(Intro.this, ChatList.class));
                 finish();
             }
         }, delaye);

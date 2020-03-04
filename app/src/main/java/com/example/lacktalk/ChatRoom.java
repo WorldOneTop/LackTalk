@@ -210,7 +210,7 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
                 break;
             case R.id.chatroom_drawer_chatOut:
                 Toast.makeText(this,"나가기 클릭, 다이얼로그로 확인받고 나가게하기",Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this,ChatList.class));
+                finish();
                 break;
             case R.id.chatroom_drawer_chatAlarm:
                 if((int)drawer_alarm.getTag() == 1) {
