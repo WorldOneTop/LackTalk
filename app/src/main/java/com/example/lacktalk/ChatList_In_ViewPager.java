@@ -56,22 +56,20 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         listView = rootView.findViewById(R.id.listview_list);
         listView.setAdapter(adapterList);
 
-        if(status==0){//같이 스크롤되기위해서 아이템으로 들여보냄
-            addItem("나","들어갈","자리");
-            addItem("내 이미지경로","내 이름","내 상메");//나자신도 추가해야함
-            addItem("구부선","친구들","몇명들어갈자리");
-        }
-        else if(status==2){ listView.setDivider(new ColorDrawable(Color.BLACK)); listView.setDividerHeight(2);}
-
             switch (status){
             case 0:
+                addItem("나","들어갈","자리");
+                addItem("내 이미지경로","내 이름","내 상메");//나자신도 추가해야함
+                addItem("구부선","친구들","몇명들어갈자리");
                 actionbar_main.setText("친구들");
                 break;
             case 1:
+                actionbar_add.setImageResource(R.drawable.icon_addchat);
                 actionbar_main.setText("채팅방들");
 
                 break;
             case 2:
+                listView.setDivider(new ColorDrawable(Color.BLACK)); listView.setDividerHeight(2);
                 actionbar_main.setText("설정");
                 rootView.findViewById(R.id.icon_add).setVisibility(View.GONE);
                 rootView.findViewById(R.id.icon_search).setVisibility(View.GONE);
