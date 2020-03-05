@@ -16,10 +16,26 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import io.socket.client.IO;
+import io.socket.client.Socket;
 
 public class Login extends AppCompatActivity {
     EditText id, pw;
@@ -41,18 +57,33 @@ public class Login extends AppCompatActivity {
         id.setTag(false);//id통과X
         pw.setTag(false);//pw통과X
 
-//        byte[] message = "asdasd".getBytes();
-//        MessageDigest md = null;
-//        try {
-//            md = MessageDigest.getInstance("SHA-256");
-//        } catch (NoSuchAlgorithmException e) {
-//            e.printStackTrace();
-//        }
-//        byte[] digest = md.digest(message);
+        new Thread(){
+            @Override
+            public void run() {
+                OutputStream out = null;
+                InputStream in = null;
+                try {
+//                    socket = new Socket("192.168.219.154",12345);
+//                    out= socket.getOutputStream();
+//                    in = socket.getInputStream();
+//                    JSONObject json = new JSONObject();
+//                    json.put("test","테스트임ㅁ다");
+//                    OutputStreamWriter outt = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+//                        outt.write(json.toString());
+                    Socket s = IO.socket("http://192.168.219.154:12345");
+                    s.connect();
+                    
 
 
 
-
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.d("asd","에러1"+e);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
 
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);//키보드 이벤트 발생용
 
