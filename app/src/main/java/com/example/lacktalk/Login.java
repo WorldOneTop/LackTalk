@@ -54,36 +54,7 @@ public class Login extends AppCompatActivity {
         signup = findViewById(R.id.signupButton);
 
         signup.setTag(false);//회원가입누르지않았다는뜻
-        id.setTag(false);//id통과X
-        pw.setTag(false);//pw통과X
 
-        new Thread(){
-            @Override
-            public void run() {
-                OutputStream out = null;
-                InputStream in = null;
-                try {
-//                    socket = new Socket("192.168.219.154",12345);
-//                    out= socket.getOutputStream();
-//                    in = socket.getInputStream();
-//                    JSONObject json = new JSONObject();
-//                    json.put("test","테스트임ㅁ다");
-//                    OutputStreamWriter outt = new OutputStreamWriter(out, StandardCharsets.UTF_8);
-//                        outt.write(json.toString());
-                    Socket s = IO.socket("http://192.168.219.154:12345");
-                    s.connect();
-                    
-
-
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Log.d("asd","에러1"+e);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
 
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);//키보드 이벤트 발생용
 
