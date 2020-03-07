@@ -70,12 +70,6 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                 actionbar_main.setText("채팅방들");
 
                 break;
-            case 2:
-                listView.setDivider(new ColorDrawable(Color.BLACK)); listView.setDividerHeight(2);
-                actionbar_main.setText("설정");
-                rootView.findViewById(R.id.icon_add).setVisibility(View.GONE);
-                rootView.findViewById(R.id.icon_search).setVisibility(View.GONE);
-                break;
         }
 
         init_OnClick();

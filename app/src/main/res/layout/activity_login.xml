@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         android:alpha="0.75"
-        android:src="@drawable/mainimg" />
+        android:src="@drawable/mainimg"/>
 
     <EditText
         android:id="@+id/emailInput"

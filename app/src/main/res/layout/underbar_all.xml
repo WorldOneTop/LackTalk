@@ -102,7 +102,6 @@
             android:layout_marginBottom="10dp"
             android:background="@null"
             android:layout_gravity="center"
-
             />
         <ImageView
             android:id="@+id/icon_send"

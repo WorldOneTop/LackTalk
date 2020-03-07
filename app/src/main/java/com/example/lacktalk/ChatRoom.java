@@ -3,13 +3,16 @@ package com.example.lacktalk;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -28,7 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
-public class ChatRoom extends AppCompatActivity implements View.OnClickListener {
+public class ChatRoom extends Activity implements View.OnClickListener {
     Intent intent;
     Random random;
     ImageView imageView_back, imageView_search, imageView_menu, imageView_add, imageView_send;
@@ -40,7 +43,7 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
     DrawerLayout drawer;
     TableLayout under_Table;
     ListView listView,drawer_listview;
-    RelativeLayout drawer_rootLayout;
+    RelativeLayout drawer_rootLayout,chatroom_roootLayout;
     Handler handler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +68,7 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
         int a = random.nextInt(50);
         String result = "";
         for (int i = 0; i < a; i++) {
-            result += (char) ((Math.random() * 26) + 97);
+            result += (char) ((Math.random() * 26) + 96);
         }
         return result;
     }
@@ -102,6 +105,7 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
         //그외 기본 나와있는 뷰 및 변수 선언
         listView = findViewById(R.id.listView);
         under_Table = include_underbar.findViewById(R.id.underbar_Table);
+        chatroom_roootLayout = findViewById(R.id.chatroom_rootLayout);
         adapter = new AdapterChat();
         intent = getIntent();
         handler = new Handler();
@@ -132,12 +136,16 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
         drawer_alarm.setOnClickListener(this);
         drawer_setting.setOnClickListener(this);
 
-
+        chatroom_roootLayout.setOnClickListener(new View.OnClickListener() {//키보드 내리기용
+            @Override
+            public void onClick(View view) {
+                imm.hideSoftInputFromWindow(editText_chat.getWindowToken(), 0);
+            }
+        });
         //일단은 키보드 내리기용 이후 기능 추가(ex 답장 삭제)
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                imm.hideSoftInputFromWindow(editText_chat.getWindowToken(), 0);
                 Log.d("asd","값 : "+adapter.getStatus(i));
                 Toast.makeText(ChatRoom.this,"값 : "+adapter.getStatus(i),Toast.LENGTH_LONG).show();
             }
@@ -147,9 +155,10 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                     if (under_Table.getVisibility() == View.VISIBLE) {//테이블매뉴가 보인다면
-                        under_Table.setVisibility(View.GONE);
                         imageView_add.setRotation(imageView_add.getRotation() + 45);
+
                     }
+                    under_Table.setVisibility(View.GONE);
                     imm.showSoftInput(editText_chat, 0);
                     editText_chat.setSelection(editText_chat.getText().length());
                 }
@@ -158,7 +167,6 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
         });
 
     }
-
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -179,22 +187,22 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
             case R.id.icon_add_underbar:  // 테이블메뉴 애니메이션 처리 해결 X 그냥 시간차로 해서 놔둠
                 if (under_Table.getVisibility() == View.VISIBLE) {//테이블매뉴가 보인다면
                     under_Table.setVisibility(View.GONE);
-
                     imm.showSoftInput(editText_chat, 0);
-                } else {//키보드빨리없애고 이따가 메뉴 보임으로써 안정적으로 보이게
+                } else {//안보이는상황
                     imm.hideSoftInputFromWindow(editText_chat.getWindowToken(), 0);
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             under_Table.setVisibility(View.VISIBLE);
                         }
-                    },200);
+                    }, 50);
+
                 }
                 imageView_add.setRotation(imageView_add.getRotation() + 45);
                 break;
             case R.id.icon_send://추후 디비때문에 바꿔야함
                 if(editText_chat.getText().toString().length() != 0) {
-                    adapter.addItem("dfault", "Test ID", editText_chat.getText().toString(), new SimpleDateFormat("yyyy/MM/dd/HH/ss").format(new Date()), true);
+                    adapter.addItem("dfault", "Test ID", editText_chat.getText().toString(), new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()), true);
                     editText_chat.setText("");
                     adapter.notifyDataSetChanged();
                 }
@@ -229,4 +237,5 @@ public class ChatRoom extends AppCompatActivity implements View.OnClickListener 
                 break;
         }
     }
+
 }

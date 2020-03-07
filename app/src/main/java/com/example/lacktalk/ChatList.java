@@ -50,6 +50,7 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
         }
         @Override
         public Fragment getItem(int position) {//생성자가 안되다 되다하는 현상 발견으로 인해 만든 안전장치 safeVar
+            if(position==2) return new Option();
             return viewPager_chatList[position] = new ChatList_In_ViewPager(getApplicationContext(), position,myName,myPicture,myMsg).safeVar(getApplicationContext(), position);
         }
         @Override
@@ -136,7 +137,7 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
     }
     static Random random = new Random();
     public static void randomAdd(){
-        for(int i=0;i<3;i++) {
+        for(int i=0;i<2;i++) {
             viewPager_chatList[i].addItem("", randomStr(), randomStr());
         }
     }

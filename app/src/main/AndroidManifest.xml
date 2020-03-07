@@ -20,7 +20,7 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".ChatRoom" />
+        <activity android:name=".ChatRoom" android:windowSoftInputMode="adjustResize"/>
         <activity android:name=".Intro">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
