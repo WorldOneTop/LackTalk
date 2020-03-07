@@ -21,8 +21,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -34,7 +38,6 @@ public class Intro extends AppCompatActivity {
     public static int HEIGHT_KEYBOARD;//키보드값 파일에서 따옴
     public static final String FILENAME = "keyboardHeight.txt";
     public static final String FILENAME_LOGIN_PATH = "autoLoginInfo.txt";
-    public static NodeJS nodeJS;
     Handler handler;
     ConstraintLayout rootLayout;
     InputMethodManager imm;
@@ -110,9 +113,8 @@ public class Intro extends AppCompatActivity {
         WIDTH = getApplicationContext().getResources().getDisplayMetrics().widthPixels;
         HEIGHT = getApplicationContext().getResources().getDisplayMetrics().heightPixels - getStatusBarHeight();
 
-        //공유할 nodejs객체 선언
-        nodeJS = new NodeJS();
-//        nodeJS.start();
+
+        NodeJS.getInstance().start(); //공유할 nodejs객체 늦은 init 선언
 
     }
 
@@ -141,17 +143,64 @@ public class Intro extends AppCompatActivity {
             @Override
             public void run() {
                 File file2 = new File(Intro.this.getFilesDir(), FILENAME_LOGIN_PATH);
-                if (file2.exists()) {//자동로그인 체크해재시 파일을 지움
+                if (file2.exists()) {//자동로그인이 될경우 바로 로그인
                     intent = new Intent(Intro.this, ChatList.class);
-                    intent.putExtra("id", "");
-                    intent.putExtra("pw", "");
-                } else {
-                    intent = new Intent(Intro.this, SocketTest.class);
+                    try {
+                        FileReader fileReader = new FileReader(file2);
+                        char []buf = new char[2048];
+                        fileReader.read(buf);
+                        JSONObject jsonObject = new JSONObject(new String(buf));
+                        fileReader.close();
+                        intent.putExtra("name",jsonObject.getString("name"));
+                        intent.putExtra("picture",jsonObject.getString("picture"));
+                        intent.putExtra("msg",jsonObject.getString("msg"));
+                        checkAutoLogin(jsonObject.getString("id"),jsonObject.getString("pw"),intent);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {//자동로그인 해재시 파일을 지우면됨
+                    intent = new Intent(Intro.this, Login.class);
                     startActivity(intent);
                     finish();
                 }
             }
         }, delaye);
+    }
+
+    public void checkAutoLogin(final String id, final String pw, final Intent intent) throws JSONException {//자동로그인 정보 가져온걸 서버랑 비교해서 담액티비티로
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", id);
+        jsonObject.put("pw", pw);
+        rootLayout.setAlpha(0.7f);
+        NodeJS.getInstance().sendJson("login", jsonObject);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("asd",id+"        "+pw+"      "+NodeJS.STATUS+"       "+NodeJS.isRecv);
+                if (NodeJS.STATUS != 1) {//연결이 끊기거나 에러라면
+                    Toast.makeText(Intro.this, "서버와의 연결 상태를 확인해 주세요.", Toast.LENGTH_LONG).show();
+                    selectIP_Dialog(Intro.this);
+                    return;
+                }
+                if (!NodeJS.isRecv)
+                    handler.postDelayed(this, 800);
+                else {//결과를 받았다면
+                    rootLayout.setAlpha(1);
+                    if(NodeJS.getRecvBoolean()){//그 결과가 참이라면
+                        intent.putExtra("id", id);
+                        intent.putExtra("pw", pw);
+                        startActivity(intent);
+                        finish();
+                    }
+                    else{
+                        Intent intent = new Intent(Intro.this, Login.class);
+                        startActivity(intent);
+                        finish();
+                        Toast.makeText(Intro.this,"등록된 로그인 정보가 다릅니다.",Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+        });
     }
 
     //이밑에는공용으로쓰일 static 메서드
@@ -185,7 +234,7 @@ public class Intro extends AppCompatActivity {
                 if (!ipaddressPattern.matcher(edittext.getText().toString()).matches()) {
                     Toast.makeText(context, "IP형식에 맞게 다시 입력해주세요.", Toast.LENGTH_LONG).show();
                 } else {
-                    NodeJS.setHost(edittext.getText()+"");
+                    NodeJS.getInstance().setHostStart(edittext.getText()+"");
                     Toast.makeText(context, "설정 되었습니다.", Toast.LENGTH_LONG).show();
                     dialog.dismiss();
                 }

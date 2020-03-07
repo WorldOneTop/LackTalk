@@ -3,33 +3,118 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mysql = require('mysql');
 
-var connection = mysql.createConnection({
-    host: 'localhost',
-    post: 12345,
-    user: 'nodejs',
-    password: 'nodejs',
-    database: 'fornodejs'
+var sql = mysql.createConnection({
+	host: 'localhost',
+	post: 12345,
+	user: 'nodejs',
+	password: 'nodejs',
+	database: 'nodejs'
 });
 
-connection.connect();
+sql.connect();
 
 
-
-
- 
-
-io.on('connection', function(socket){
-    console.log('a user connected');
-    socket.on('disconnect', function(){
-      console.log('user disconnected');
+io.on('connection', function(socket){	//연결 되면 이벤트 설정
+	console.log('a user connected');
+    socket.on('disconnect', function(){//연결해제 이벤트
+    	console.log('user disconnected');
     });
- 
-    socket.on('msg', function(msg){
-        console.log('message: ' + msg.asd);
-        io.emit('msg', msg);
-    });
+
+	socket.on('login', function(msg){//로그인 확인 이벤트
+		login_callback(msg.id,msg.pw,function(val_bool){
+			io.emit('onBoolean',val_bool);
+		})
+	});
+
+	socket.on('signup',function(msg){//아이디 중복 확인 및 회원가입 이벤트
+		signup_callback(msg.id,msg.pw,function(val_bool){
+			io.emit('onBoolean',val_bool);
+		})
+	});
+
+	
+
+
+	socket.on('msg', function(msg){
+		console.log('message: ' + msg.asd);
+		io.emit('msg', msg);
+	});
 });
- 
+login_callback = function(id,pw, callback){
+	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"' and user.pw = '"+pw+"';", function (error, results, fields) { 
+		if (error) {
+			callback(false);
+		} else { //결과는 배열인덱스.키값으로 접근 없으면 배열.length가 0
+			if(results.length != 0){//로그인 정보가 있다면 나머지 정보도 전송
+				io.emit('msg',results[0]);
+			}
+			callback(results.length != 0);	//결과가 0이면 아이디가 X이므로 false
+
+		}
+	});
+}
+signup_callback = function(id,pw,callback){
+	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"';", function (error, results, fields) { 
+		if (error) {
+			callback(false);
+		} else { //결과는 배열인덱스.키값으로 접근 없으면 배열.length가 0
+			if(results.length == 0){//하려는 아이디가 없다면 insert
+				sql.query("insert into user(id,pw) values('"+id+"','"+pw+"');", function (error, results, fields) { });//쿼리문도 콜백형식
+				callback(true);
+			}else{
+				callback(false);
+			}
+		}
+	});
+}
+// function signup(id,pw){
+// 	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"';", function (error, results, fields) {  //조회
+// 		if (error) {
+// 			console.log(error);
+// 		} else {
+//         console.log(results);  //결과 출력(간혹 커넥션이 끊어졌다는 오류가 나올때가 있다.)
+//     }
+// });
+
+// }
+
+// //result[n].column
+// SELECT * FROM user WHERE EXISTS ( SELECT * FROM user WHERE user.key = user.key )
+// connection.query("select * from test", function (error, results, fields) {  //조회
+// 	if (error) {
+// 		console.log(error);
+// 	} else {
+//         console.log(results);  //결과 출력(간혹 커넥션이 끊어졌다는 오류가 나올때가 있다.)
+//     }
+// });
+
+// insert into user values('id','password');
+
+
 http.listen(12345, function(){
-  console.log('listening on *:12345');
+	console.log('listening on *:12345');
 });
+
+// mysql 쿼리문, char set utf-8, varchar(n)은 바이트수가 아닌 글자 수
+
+// create database fornodejs;
+// CREATE USER nodejs@'localhost' IDENTIFIED BY 'nodejs'
+// grant all privileges on nodejs.* to nodejs@'localhost';
+
+// CREATE TABLE user(
+// id varchar(30) PRIMARY KEY,
+// pw char(64) NOT NULL,
+// name varchar(40) DEFAULT 'visitor',
+// picture varchar(40),
+// msg varchar (40)
+// );
+
+
+// 콜백함수 기본 형태 선언 후 plus실행시 인자값의 함수가 실행되면서 log실행
+// plus = function(a, b, callback){
+//   var result = a+b
+//   callback(result);
+// }
+ // 
+// plus(5,10, function(res) { console.log(res);});
+

@@ -10,6 +10,7 @@ import androidx.viewpager.widget.ViewPager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -29,6 +30,8 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
     PagerAdapter pagerAdapter;
     private View upperLine1,upperLine2,upperLine3;
     static ChatList_In_ViewPager[] viewPager_chatList;
+    private String myName,myPicture,myMsg;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,7 +50,7 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
         }
         @Override
         public Fragment getItem(int position) {//생성자가 안되다 되다하는 현상 발견으로 인해 만든 안전장치 safeVar
-            return viewPager_chatList[position] = new ChatList_In_ViewPager(getApplicationContext(), position).safeVar(getApplicationContext(), position);
+            return viewPager_chatList[position] = new ChatList_In_ViewPager(getApplicationContext(), position,myName,myPicture,myMsg).safeVar(getApplicationContext(), position);
         }
         @Override
         public int getCount() {
@@ -57,6 +60,16 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
 
 
     public void init(){
+        //밖의 레이아웃 및 변수 선언
+        intent = getIntent();
+        myName= intent.getStringExtra("name");
+        myPicture = intent.getStringExtra("picture");
+        myMsg = intent.getStringExtra("msg");
+        if(myName.equals("null")) myName = "";
+        if(myPicture.equals("null")) myPicture ="";
+        if(myMsg.equals("null")) myMsg = "";
+
+
         //페이지마다 보여질 뷰 및 변수 선언
         pager = findViewById(R.id.pager);
         viewPager_chatList = new ChatList_In_ViewPager[NUM_PAGE];//관리할수있게 따로 저장
@@ -80,6 +93,7 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
         pager.setCurrentItem(1);//현재 화면을 1번째 인덱스로
         pager.setOffscreenPageLimit(2);//준비해놓는 페이지를 양옆 2개씩으로 oncreateview로 실행
         upperLine2.setVisibility(View.VISIBLE);//처음은 채팅방들부터 보여지기때문에
+
 
         init_ClickListener();
 

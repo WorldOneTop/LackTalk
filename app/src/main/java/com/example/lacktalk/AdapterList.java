@@ -50,12 +50,10 @@ public class AdapterList extends BaseAdapter {
         viewHolder.message.setText(listViewItem.getMessage());
 
 
-        //디폴트 설정
-        if(status==0) {
-            init_0_status(viewHolder,position);
-        }
         switch (status){
             case 0:
+                if(listViewItem.getMessage().isEmpty()) viewHolder.message.setVisibility(View.INVISIBLE);
+                else viewHolder.message.setVisibility(View.VISIBLE);
                 break;
             case 1:
                 viewHolder.message.setBackground(null);
@@ -68,6 +66,10 @@ public class AdapterList extends BaseAdapter {
         }
 
 
+        //디폴트 설정
+        if(status==0) {
+            init_0_status(viewHolder,position);
+        }
 
 
 
@@ -98,7 +100,7 @@ public class AdapterList extends BaseAdapter {
             else if(position==1) {
                 viewHolder.picture.setVisibility(View.VISIBLE);
                 viewHolder.name.setVisibility(View.VISIBLE);
-                viewHolder.message.setVisibility(View.VISIBLE);
+                if(!listViewItemList.get(1).getMessage().isEmpty())viewHolder.message.setVisibility(View.VISIBLE);//자신의 말이 비어잇지가 않을때만 보이게
             }
             else {
                 viewHolder.relativeLayout.setVisibility(View.VISIBLE);
@@ -111,6 +113,7 @@ public class AdapterList extends BaseAdapter {
             viewHolder.first_text.setVisibility(View.GONE);
             viewHolder.relativeLayout.setVisibility(View.GONE);
         }
+
 
     }
 }

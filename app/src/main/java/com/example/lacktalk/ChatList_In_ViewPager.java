@@ -26,11 +26,13 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
     private TextView actionbar_main;
     private AdapterList adapterList;
     private ListView listView;
+    private String myName,myPicture,myMsg;
 
     ChatList_In_ViewPager(){}//앱 재실행 오류 이슈 떄문에 작성만
-    ChatList_In_ViewPager(Context c, int s){
+    ChatList_In_ViewPager(Context c, int s, String a,String b,String cc){
         context = c;
         status = s;
+        myName = a;myPicture = b; myMsg = cc;
     }
     @Nullable
     @Override
@@ -59,8 +61,8 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
             switch (status){
             case 0:
                 addItem("나","들어갈","자리");
-                addItem("내 이미지경로","내 이름","내 상메");//나자신도 추가해야함
-                addItem("구부선","친구들","몇명들어갈자리");
+                addItem(myPicture,myName,myMsg);//나자신도 추가해야함
+                addItem("구분선","친구들","몇명들어갈자리");
                 actionbar_main.setText("친구들");
                 break;
             case 1:
