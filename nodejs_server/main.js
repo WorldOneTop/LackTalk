@@ -95,22 +95,41 @@ http.listen(12345, function(){
 	console.log('listening on *:12345');
 });
 
-// mysql 쿼리문, char set utf-8, varchar(n)은 바이트수가 아닌 글자 수
+// mysql 쿼리문, char set utf-8, varchar(n)은 바이트수가 아닌 글자 수,외래키사용 데이터관리주의
 
-// create database fornodejs;
+// create database nodejs;
 // CREATE USER nodejs@'localhost' IDENTIFIED BY 'nodejs'
 // grant all privileges on nodejs.* to nodejs@'localhost';
 
 // CREATE TABLE user(
-// id varchar(30) PRIMARY KEY,
-// pw char(64) NOT NULL,
-// name varchar(40) DEFAULT 'visitor',
-// picture varchar(40),
-// msg varchar (40)
+// 	user_num int AUTO_INCREMENT PRIMARY KEY,
+// 	id varchar(30) NOT NULL,
+// 	pw char(64) NOT NULL,
+// 	name varchar(40) DEFAULT 'visitor',
+// 	picture varchar(40) DEFAULT '',
+// 	msg varchar (40) DEFAULT ''
 // );
 
+// CREATE TABLE chatroom(
+// 	room_num INT AUTO_INCREMENT PRIMARY KEY,
+// 	room_user varchar(200)
+// );
 
-// 콜백함수 기본 형태 선언 후 plus실행시 인자값의 함수가 실행되면서 log실행
+// CREATE TABLE chatrecode(
+// 	recode_num INT AUTO_INCREMENT PRIMARY KEY,
+// 	room_num INT,
+// 	amount INT NOT NULL,
+// 	who INT,
+// 	date DATETIME NOT NULL,
+// 	text TEXT NOT NULL,
+// 	type INT NOT NULL,
+// 	FOREIGN KEY (room_num) REFERENCES chatroom(room_num),
+// 	FOREIGN KEY (who) REFERENCES user(user_num)
+// );
+//type : 1-문자 , 2-이미지 , 3-파일  ,amount-읽지않은사람의양
+
+
+// 콜백함수 기본 형태, 선언 후 plus실행시 인자값의 함수가 실행되면서 log실행
 // plus = function(a, b, callback){
 //   var result = a+b
 //   callback(result);

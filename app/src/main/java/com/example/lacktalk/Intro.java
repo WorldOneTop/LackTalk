@@ -159,7 +159,7 @@ public class Intro extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 } else {//자동로그인 해재시 파일을 지우면됨
-                    intent = new Intent(Intro.this, Login.class);
+                        intent = new Intent(Intro.this, Login.class);
                     startActivity(intent);
                     finish();
                 }
@@ -168,7 +168,7 @@ public class Intro extends AppCompatActivity {
     }
 
     public void checkAutoLogin(final String id, final String pw, final Intent intent) throws JSONException {//자동로그인 정보 가져온걸 서버랑 비교해서 담액티비티로
-        JSONObject jsonObject = new JSONObject();
+        final JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", id);
         jsonObject.put("pw", pw);
         rootLayout.setAlpha(0.7f);
@@ -176,27 +176,36 @@ public class Intro extends AppCompatActivity {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                Log.d("asd",id+"        "+pw+"      "+NodeJS.STATUS+"       "+NodeJS.isRecv);
-                if (NodeJS.STATUS != 1) {//연결이 끊기거나 에러라면
+                if(NodeJS.STATUS ==3){//재시도 중 이라면
+                    NodeJS.getInstance().sendJson("login", jsonObject);
+                    handler.postDelayed(this, 1500);
+                }
+                else if (NodeJS.STATUS != 1) {//연결이 끊기거나 에러라면
                     Toast.makeText(Intro.this, "서버와의 연결 상태를 확인해 주세요.", Toast.LENGTH_LONG).show();
-                    selectIP_Dialog(Intro.this);
+                    if(NodeJS.STATUS !=3) {   //재시도중이 아니라면(연결시도~연결 시작전)
+                        selectIP_Dialog(Intro.this);
+                        NodeJS.STATUS =3;
+                        handler.postDelayed(this, 1200);
+                    }
                     return;
                 }
-                if (!NodeJS.isRecv)
-                    handler.postDelayed(this, 800);
-                else {//결과를 받았다면
-                    rootLayout.setAlpha(1);
-                    if(NodeJS.getRecvBoolean()){//그 결과가 참이라면
-                        intent.putExtra("id", id);
-                        intent.putExtra("pw", pw);
-                        startActivity(intent);
-                        finish();
+                else {
+                    if (NodeJS.isRecv) {//결과를 받았다면
+                        rootLayout.setAlpha(1);
+                        if (NodeJS.getRecvBoolean()) {//그 결과가 참이라면
+                            intent.putExtra("id", id);
+                            intent.putExtra("pw", pw);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Intent intent = new Intent(Intro.this, Login.class);
+                            startActivity(intent);
+                            finish();
+                            Toast.makeText(Intro.this, "등록된 로그인 정보가 다릅니다.", Toast.LENGTH_LONG).show();
+                        }
                     }
                     else{
-                        Intent intent = new Intent(Intro.this, Login.class);
-                        startActivity(intent);
-                        finish();
-                        Toast.makeText(Intro.this,"등록된 로그인 정보가 다릅니다.",Toast.LENGTH_LONG).show();
+                        handler.postDelayed(this, 600);
                     }
                 }
             }
@@ -222,6 +231,7 @@ public class Intro extends AppCompatActivity {
         builder.setNegativeButton("취소",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        NodeJS.getInstance().setHostStart(NodeJS.HOST);
                         Toast.makeText(context, "취소 되었습니다.", Toast.LENGTH_LONG).show();
                     }
                 });

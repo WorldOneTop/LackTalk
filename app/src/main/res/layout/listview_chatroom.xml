@@ -21,7 +21,6 @@
         <TextView
             android:id="@+id/textview_date"
             android:textSize="17sp"
-            android:text="aaaa"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <View
@@ -53,7 +52,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="7dp"
-        android:textSize="14sp"/>
+        android:textSize="16sp"
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/item_text"

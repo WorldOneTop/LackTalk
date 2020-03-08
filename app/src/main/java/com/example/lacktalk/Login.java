@@ -23,27 +23,9 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import io.socket.client.IO;
-import io.socket.client.Socket;
 
 public class Login extends AppCompatActivity {
     EditText id, pw;
@@ -83,9 +65,9 @@ public class Login extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                if (p2.matcher(pw.getText().toString()).matches() && p.matcher(id.getText().toString()).matches()) {//조건에 맞게 로그인 클릭
-                    JSONObject jsonObject = new JSONObject();
+                if(id.getText().toString().length() >30)
+                    Toast.makeText(Login.this, "ID는 30글자를 넘을 수 없습니다.", Toast.LENGTH_LONG).show();
+                else if (p2.matcher(pw.getText().toString()).matches() && p.matcher(id.getText().toString()).matches()) {//조건에 맞게 로그인 클릭
                     try {
                         wait_server_forResult(id.getText() + "",pw.getText() + "",true);
                     } catch (Exception e) {
@@ -99,8 +81,9 @@ public class Login extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if ((boolean) signup.getTag()) {//회원가입폼으로 눌렀다면
-
-                    if (p2.matcher(pw.getText().toString()).matches() && p.matcher(id.getText().toString()).matches()) {//조건에 맞게  클릭
+                    if(id.getText().toString().length() >30)
+                        Toast.makeText(Login.this, "ID는 30글자를 넘을 수 없습니다.", Toast.LENGTH_LONG).show();
+                    else if (p2.matcher(pw.getText().toString()).matches() && p.matcher(id.getText().toString()).matches()) {//조건에 맞게  클릭
                         try {
                             wait_server_forResult(id.getText() + "",pw.getText() + "",false);
                         } catch (Exception e) {
@@ -206,11 +189,12 @@ public class Login extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                         }
-                        //값 자동로그인으로 저장
+                        //신규사용자인 부분 , 값 자동로그인으로 저장
                         try {
+                            rootLayout.setAlpha(1);
                             JSONObject jsonObject = new JSONObject();
                             jsonObject.put("id", id);           jsonObject.put("pw", SHA_str);
-                            intent.putExtra("name","");     jsonObject.put("name", "");
+                            intent.putExtra("name","visitor");     jsonObject.put("name", "visitor");
                             intent.putExtra("picture","");  jsonObject.put("picture", "");
                             intent.putExtra("msg","");      jsonObject.put("msg", "");
                             FileWriter fileWriter = new FileWriter(new File(Login.this.getFilesDir(),Intro.FILENAME_LOGIN_PATH));
@@ -223,7 +207,8 @@ public class Login extends AppCompatActivity {
                         }
                         startActivity(intent);
                         finish();
-                    } else {//아니라면
+                    } else {//사용자 정보가 안맞다면
+                        rootLayout.setAlpha(1f);
                         if (isLogin)
                             Toast.makeText(Login.this, "ID 혹은 비밀번호를 확인해 주세요.", Toast.LENGTH_LONG).show();
                         else
@@ -240,7 +225,9 @@ public class Login extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {// 입력되는 텍스트에 변화가 있을 때
                 if (s.length() != 0 && s.charAt(start + count - 1) == '\n') {//엔터키 판정
                     id.setText(id.getText().toString().replace("\n", ""));
-                    if (!p.matcher(id.getText().toString()).matches()) {
+                    if(id.getText().length() >30)
+                        Toast.makeText(Login.this, "30글자 이하로 입력하세요", Toast.LENGTH_SHORT).show();
+                    else if (!p.matcher(id.getText().toString()).matches()) {
                         Toast.makeText(Login.this, "Email형식으로 입력하세요", Toast.LENGTH_SHORT).show();
                         id.setTextColor(Color.RED);
                         id.setSelection(id.getText().length());

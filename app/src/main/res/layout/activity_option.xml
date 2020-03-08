@@ -49,9 +49,10 @@
             android:gravity="start"
             android:textSize="22sp"
             android:padding="8dp"/>
+            android:padding="8dp"/>
         <TextView
             android:id="@+id/option_theme"
-            android:text="테바 변경"
+            android:text="테마 변경"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"
@@ -60,6 +61,22 @@
         <TextView
             android:id="@+id/option_host"
             android:text="서버 IP 변경"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:textSize="22sp"
+            android:padding="8dp"/>
+        <TextView
+            android:id="@+id/option_license"
+            android:text="저작권"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:textSize="22sp"
+            android:padding="8dp"/>
+        <TextView
+            android:id="@+id/option_implement"
+            android:text="구현 기술"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"

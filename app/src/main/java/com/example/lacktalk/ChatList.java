@@ -40,17 +40,14 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
         init();
 
 
-
     }
 
     //어댑터 안에서 각각의 아이템을 데이터로서 관리한다
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
-        public ScreenSlidePagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
+        public ScreenSlidePagerAdapter(FragmentManager fm) { super(fm); }
         @Override
         public Fragment getItem(int position) {//생성자가 안되다 되다하는 현상 발견으로 인해 만든 안전장치 safeVar
-            if(position==2) return new Option();
+            if(position==2) return new Option(ChatList.this);
             return viewPager_chatList[position] = new ChatList_In_ViewPager(getApplicationContext(), position,myName,myPicture,myMsg).safeVar(getApplicationContext(), position);
         }
         @Override
@@ -66,10 +63,6 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
         myName= intent.getStringExtra("name");
         myPicture = intent.getStringExtra("picture");
         myMsg = intent.getStringExtra("msg");
-        if(myName.equals("null")) myName = "";
-        if(myPicture.equals("null")) myPicture ="";
-        if(myMsg.equals("null")) myMsg = "";
-
 
         //페이지마다 보여질 뷰 및 변수 선언
         pager = findViewById(R.id.pager);
