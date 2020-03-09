@@ -21,6 +21,7 @@ import java.util.List;
 @Entity//테이블 만드는 부분같음
 class db_User {
     public db_User(){};
+    public db_User(int a){user_num= a;};
     public db_User(String a,String b,String c,String d){
         id = a; name = b; picture = c; msg = d;
     }
@@ -34,6 +35,7 @@ class db_User {
 @Entity
 class  db_Room{
     public db_Room(){}
+    public db_Room(int a){room_num = a;}
     public db_Room(int a,String b,String c,String d){
         room_num_server = a; room_user = b;room_name = c;room_picture = d;
     }
@@ -47,6 +49,7 @@ class  db_Room{
 @Entity
 class  db_Recode {
     public db_Recode(){}
+    public db_Recode(int a){recode_num = a;}
     public db_Recode(int a,int b,String c,String d,String e,int f,int g){
         recode_room = a; recode_amount = b; recode_who = c; recode_date = d; recode_date = e; recode_type = f; recode_read= g;
     }
@@ -94,8 +97,6 @@ interface MyDao {
     @Query("SELECT ro.room_picture, ro.room_name , re.recode_text, re.recode_date, SUM(re.recode_read) FROM db_Room as ro,db_Recode as re " +
             "WHERE ro.room_num = re.recode_room group by ro.room_num ORDER BY re.recode_date DESC")
     Cursor getChatLast();                 //전체적인 채팅방뷰 갖고오기(ChatList)
-
-
 }
 @Database(entities = {db_User.class,db_Room.class,db_Recode.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {

@@ -88,6 +88,9 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                 }
             });
         }
+        else if(status ==0){
+
+        }
     }
     public void addItem(String a,String b,String c){
         adapterList.addItem(a,b,c);
@@ -101,7 +104,13 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                 break;
             case R.id.icon_add:
                 Toast.makeText(context, "친구추가클릭", Toast.LENGTH_SHORT).show();
-                ChatList.randomAdd();
+//                ChatList.randomAdd();
+                if(status==0){
+                    AppDatabase.getInstance(context).myDao().insertUser(new db_User());
+                }
+                else{
+
+                }
                 break;
         }
     }
