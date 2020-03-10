@@ -49,7 +49,7 @@ public class Intro extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
-
+        startActivity(new Intent(this,AddActivity.class));
         init();
 
         File file = new File(this.getFilesDir(), FILENAME);
