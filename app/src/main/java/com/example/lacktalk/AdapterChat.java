@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,7 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class AdapterChat extends BaseAdapter {
+public class AdapterChat extends BaseAdapter implements Filterable {
     private ArrayList<ItemChat> listViewItemList = new ArrayList<ItemChat>() ;
     String[] now_arr;
     // ListViewAdapter의 생성자
@@ -149,4 +151,8 @@ public class AdapterChat extends BaseAdapter {
         return "position : "+position+"  말한사람 : "+listViewItemList.get(position).getIsme()+"\n말한시각 : "+listViewItemList.get(position).getTime()+"\n닉네임 : "+listViewItemList.get(position).getName();
     }
 
+    @Override
+    public Filter getFilter() {
+        return null;
+    }
 }

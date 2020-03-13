@@ -2,6 +2,7 @@ package com.example.lacktalk;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -10,6 +11,9 @@ import android.widget.Button;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -30,7 +34,7 @@ public class NodeJS {//싱글톤 클래스
     private static JSONObject recvMsg;
 
     private NodeJS(){
-        HOST="192.168.219.154"; PORT = 12345;  isRecv =false; isRecv_msg=false; STATUS = 0;
+        PORT = 12345;  isRecv =false; isRecv_msg=false; STATUS = 0;
     }
     private static class SingletonHolder {
         public static final NodeJS INSTANCE = new NodeJS();
@@ -38,12 +42,29 @@ public class NodeJS {//싱글톤 클래스
     public static NodeJS getInstance() {
         return SingletonHolder.INSTANCE;
     }
-    public void setHostStart(String str){
+
+    public void setHostStart(String str,Context context){
         socket.close();
+        try {
+            context.openFileOutput(Intro.FILENAME_IP,Context.MODE_PRIVATE).write(str.getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         HOST = str;
-        start();
+        start(context);
     }
-    public void start() {
+    public void start(Context context) {
+        try {
+            if(!(new File(context.getFilesDir(), Intro.FILENAME_IP).exists()))
+                context.openFileOutput(Intro.FILENAME_IP, Context.MODE_PRIVATE).write("192.168.137.126".getBytes());
+
+            byte temp[] = new byte[15];
+            context.openFileInput(Intro.FILENAME_IP).read(temp);
+            HOST = new String(temp);
+            Log.d("asd","Ip : "+new String(temp));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         /* init  부분*/
         try {
             socket = IO.socket("http://"+HOST+":"+PORT);
@@ -51,7 +72,6 @@ public class NodeJS {//싱글톤 클래스
             e.printStackTrace();
         }
         /* default 설정 부분*/
-        socket.close();//세팅후 재시작일 수 있어서
         socket.on("msg", onMessage);
         socket.on(Socket.EVENT_CONNECT,onConnect);
         socket.on(Socket.EVENT_DISCONNECT,onDisconnect);

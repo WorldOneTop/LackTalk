@@ -17,36 +17,27 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class AddActivity extends AppCompatActivity {
+    public static AdapterList adapterList;
+    public static AdapterChat adapterChat;
+    public static boolean isFriend;
+    private ListView listView;
+    private HorizontalScrollView scrollView;
+    private EditText editText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add);
-        final HorizontalScrollView mScrollView = findViewById(R.id.add_scrollview);
-        final LinearLayout linearLayout = findViewById(R.id.add_linearLayout);
 
-        TextView textView = new TextView(this);
-        textView.setText("aaaaaaaaaaaaaa");
-        linearLayout.addView(textView);
-//        linearLayout.addView(textView);
-        final ImageView imageView = findViewById(R.id.imageView2);
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ImageView imageView1 = new ImageView(AddActivity.this);
-                imageView1.setImageResource(R.drawable.defaultimg);
-                Log.d("asd","aaaaaaa");
-                linearLayout.addView(imageView1);
-            }
-        });
-        AdapterChat adapter = new AdapterChat();
-        ((ListView)findViewById(R.id.listview1)).setAdapter(adapter);
-        adapter.addItem("dfault", "Test ID", "asdads", new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()), true);
-        adapter.addItem("dfault", "Test ID", "asdads", new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()), true);
-        adapter.addItem("dfault", "Test ID", "asdads", new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()), true);
-        adapter.addItem("dfault", "Test ID", "asdads", new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()), true);
-        adapter.addItem("dfault", "Test ID", "asdads", new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()), true);
-        adapter.addItem("dfault", "Test ID", "asdads", new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()), true);
-        EditText editText = findViewById(R.id.add_editText);
+        init();
+    }
+    public void init(){
+        listView = findViewById(R.id.add_listview);
+        scrollView = findViewById(R.id.add_scrollview);
+        editText = findViewById(R.id.add_editText);
+
+//        listView.setAdapter(isFriend ? adapterList);
+//        listView.setFilterText("");
+//        listView.clearTextFilter();
     }
 }

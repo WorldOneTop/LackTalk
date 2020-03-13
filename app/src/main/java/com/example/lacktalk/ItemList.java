@@ -7,12 +7,17 @@ public class ItemList {
     private String imagePath;
     private String name;
     private String message;
+    private String initial;
 
     public ItemList(String a ,String b ,String c){
         imagePath = a;
         name = b;
         message =c;
+        initial = Intro.getInitialSound(name);
     }
+    public String getInitial() {return initial;}
+    public void setInitial(String initial) {this.initial = initial;}
+
     public String getImagePath() {
         return imagePath;
     }

@@ -8,12 +8,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PatternMatcher;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -38,6 +35,8 @@ public class Intro extends AppCompatActivity {
     public static int HEIGHT_KEYBOARD;//키보드값 파일에서 따옴
     public static final String FILENAME = "keyboardHeight.txt";
     public static final String FILENAME_LOGIN_PATH = "autoLoginInfo.txt";
+    public static final String FILENAME_IP = "ip.txt";
+    public static boolean showingIP = false;
     Handler handler;
     ConstraintLayout rootLayout;
     InputMethodManager imm;
@@ -49,7 +48,7 @@ public class Intro extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
-        startActivity(new Intent(this,AddActivity.class));
+//        startActivity(new Intent(this,AddActivity.class));
         init();
 
         File file = new File(this.getFilesDir(), FILENAME);
@@ -114,7 +113,7 @@ public class Intro extends AppCompatActivity {
         HEIGHT = getApplicationContext().getResources().getDisplayMetrics().heightPixels - getStatusBarHeight();
 
 
-        NodeJS.getInstance().start(); //공유할 nodejs객체 늦은 init 선언
+        NodeJS.getInstance().start(this); //공유할 nodejs객체 늦은 init 선언
 
     }
 
@@ -176,20 +175,20 @@ public class Intro extends AppCompatActivity {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if(NodeJS.STATUS ==3){//재시도 중 이라면
-                    NodeJS.getInstance().sendJson("login", jsonObject);
-                    handler.postDelayed(this, 1500);
-                }
-                else if (NodeJS.STATUS != 1) {//연결이 끊기거나 에러라면
+                Log.d("asd","네트워크 상태 : "+NodeJS.STATUS+"받은 상태 "+ NodeJS.isRecv);
+               if (NodeJS.STATUS != 1) {//연결이 끊기거나 에러라면
                     Toast.makeText(Intro.this, "서버와의 연결 상태를 확인해 주세요.", Toast.LENGTH_LONG).show();
-                    if(NodeJS.STATUS !=3) {   //재시도중이 아니라면(연결시도~연결 시작전)
+                    if(!showingIP) {   //액티비티 안보이면
                         selectIP_Dialog(Intro.this);
-                        NodeJS.STATUS =3;
                         handler.postDelayed(this, 1200);
+                        return;
                     }
-                    return;
+                    else{//설정창이보이고 연결이안된상태라면
+                        handler.postDelayed(this, 500);
+                        return;
+                    }
                 }
-                else {
+                else {//연결이 된 상태라면
                     if (NodeJS.isRecv) {//결과를 받았다면
                         rootLayout.setAlpha(1);
                         if (NodeJS.getRecvBoolean()) {//그 결과가 참이라면
@@ -197,17 +196,21 @@ public class Intro extends AppCompatActivity {
                             intent.putExtra("pw", pw);
                             startActivity(intent);
                             finish();
+                            return;
                         } else {
                             Intent intent = new Intent(Intro.this, Login.class);
                             startActivity(intent);
                             finish();
                             Toast.makeText(Intro.this, "등록된 로그인 정보가 다릅니다.", Toast.LENGTH_LONG).show();
+                            return;
                         }
                     }
-                    else{
+                    else{//연결되고 결과안받았다면
                         handler.postDelayed(this, 600);
+                        return;
                     }
                 }
+
             }
         });
     }
@@ -215,6 +218,7 @@ public class Intro extends AppCompatActivity {
     //이밑에는공용으로쓰일 static 메서드
 
     public static void selectIP_Dialog(final Context context) {
+        Intro.showingIP = true;
         final Pattern ipaddressPattern = Pattern.compile(
                 "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
@@ -231,8 +235,9 @@ public class Intro extends AppCompatActivity {
         builder.setNegativeButton("취소",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        NodeJS.getInstance().setHostStart(NodeJS.HOST);
+                        NodeJS.getInstance().setHostStart(NodeJS.HOST,context);
                         Toast.makeText(context, "취소 되었습니다.", Toast.LENGTH_LONG).show();
+                        Intro.showingIP = false;
                     }
                 });
         //이밑에는 버튼눌러도 안닫히게끔 재정의
@@ -244,8 +249,9 @@ public class Intro extends AppCompatActivity {
                 if (!ipaddressPattern.matcher(edittext.getText().toString()).matches()) {
                     Toast.makeText(context, "IP형식에 맞게 다시 입력해주세요.", Toast.LENGTH_LONG).show();
                 } else {
-                    NodeJS.getInstance().setHostStart(edittext.getText()+"");
+                    NodeJS.getInstance().setHostStart(edittext.getText()+"",context);
                     Toast.makeText(context, "설정 되었습니다.", Toast.LENGTH_LONG).show();
+                    Intro.showingIP = false;
                     dialog.dismiss();
                 }
 
@@ -266,5 +272,24 @@ public class Intro extends AppCompatActivity {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(str.getBytes());
         return byteToHexString(md.digest());
+    }
+    public static String getInitialSound(String text) {
+        String[] chs = { "ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ",
+                "ㅎ" };
+
+        if (text.length() > 0) {
+            String result="";
+            for (int i = 0; i < text.length(); i++) {
+                char chName = text.charAt(i);
+                if (chName >= 0xAC00) {
+                    int uniVal = chName - 0xAC00;
+                    int cho = ((uniVal - (uniVal % 28)) / 28) / 21;
+                    result += chs[cho];
+                }
+            }
+            return result;
+        }
+
+        return null;
     }
 }
