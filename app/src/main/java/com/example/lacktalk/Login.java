@@ -36,7 +36,8 @@ public class Login extends AppCompatActivity {
     InputMethodManager imm;
     RelativeLayout rootLayout;
     Handler handler;
-
+    JSONObject sendInfo = null;
+    boolean isLogin;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +55,35 @@ public class Login extends AppCompatActivity {
 
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);//키보드 이벤트 발생용
 
+
+        Intro.eventConnect = new EventConnect() {
+            @Override
+            public void onDisconnect() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(!Intro.showingIP) {   //액티비티 안보이면
+                            Intro.selectIP_Dialog(Login.this);
+                            Toast.makeText(Login.this, "서버와의 연결 상태를 확인해 주세요.", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+                Log.d("asd","디스커낵트호출");
+            }
+
+            @Override
+            public void onConnect() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(sendInfo != null)
+                            NodeJS.getInstance().sendJson(isLogin ? "login":"signup", sendInfo);
+                        handler.postDelayed(this,300);
+                    }
+                });
+                Log.d("asd","커낵트호출");
+            }
+        };
 
         rootLayout.setOnClickListener(new View.OnClickListener() {//딴데누르면 키보드 닫히게
             @Override
@@ -138,85 +168,77 @@ public class Login extends AppCompatActivity {
     }
 
     public void wait_server_forResult(final String id, final String pw, final boolean isLogin) throws Exception {
-        JSONObject jsonObject = new JSONObject();
+        sendInfo = new JSONObject();
         final String SHA_str = Intro.stringToSHA_256(pw);
-        jsonObject.put("id", id);
-        jsonObject.put("pw", SHA_str);
-        rootLayout.setAlpha(0.7f);
-        NodeJS.getInstance().sendJson(isLogin ? "login":"signup", jsonObject);
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (NodeJS.STATUS != 1) {//연결이 끊기거나 에러라면
-                    Toast.makeText(Login.this, "서버와의 연결 상태를 확인해 주세요.", Toast.LENGTH_LONG).show();
-                    Intro.selectIP_Dialog(Login.this);
-                    return;
-                }
-                if (!NodeJS.isRecv)
-                    handler.postDelayed(this, 800);
-                else {//결과를 받았다면
-                    if (NodeJS.getRecvBoolean()) {//결과가 참이라면
-                        Intent intent = new Intent(Login.this, ChatList.class);
-                        intent.putExtra("id", id);
-                        intent.putExtra("pw", SHA_str);
-                        if(isLogin){     //신규 사용자가 아니라 정보 얻기위해서
-                            try {
-                                for (int i = 0; i < 5; i++) {
-                                    if (NodeJS.isRecv_msg) break;
-                                    if (i == 4) {
-                                        rootLayout.setAlpha(1);
-                                        Toast.makeText(Login.this, "서버와의 연결 상태를 확인해 주세요.", Toast.LENGTH_LONG).show();
-                                        Intro.selectIP_Dialog(Login.this);
-                                        return;
-                                    }
-                                    Thread.sleep(800);//사용자 정보 얻기 위해서 시간 벎
-                                }
-                                rootLayout.setAlpha(1);//msg가 들어온거 확인한시점
-                                JSONObject json_login = NodeJS.getMsg();
-                                FileWriter fileWriter = new FileWriter(new File(Login.this.getFilesDir(),Intro.FILENAME_LOGIN_PATH));
-                                fileWriter.write(json_login.toString());
-                                fileWriter.flush();
-                                fileWriter.close();
-                                intent.putExtra("name",json_login.getString("name"));     intent.putExtra("picture",json_login.getString("picture"));
-                                intent.putExtra("msg",json_login.getString("msg"));
-                                startActivity(intent);
-                                finish();
-                                return;
+        sendInfo.put("id", id);
+        sendInfo.put("pw", SHA_str);
+        this.isLogin = isLogin;
 
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        //신규사용자인 부분 , 값 자동로그인으로 저장
+        rootLayout.setAlpha(0.7f);
+        Intro.eventMessage = new EventMessage() {
+            @Override
+            public void messageArrive() {
+                if (NodeJS.getRecvBoolean()) {//결과가 참이라면
+                    Intent intent = new Intent(Login.this, ChatList.class);
+                    intent.putExtra("id", id);
+                    intent.putExtra("pw", SHA_str);
+                    if(isLogin){     //신규 사용자가 아니라 정보 얻기위해서
                         try {
-                            rootLayout.setAlpha(1);
-                            JSONObject jsonObject = new JSONObject();
-                            jsonObject.put("id", id);           jsonObject.put("pw", SHA_str);
-                            intent.putExtra("name","visitor");     jsonObject.put("name", "visitor");
-                            intent.putExtra("picture","");  jsonObject.put("picture", "");
-                            intent.putExtra("msg","");      jsonObject.put("msg", "");
+                            rootLayout.setAlpha(1);//msg가 들어온거 확인한시점
+                            JSONObject json_login = NodeJS.getMsg();
                             FileWriter fileWriter = new FileWriter(new File(Login.this.getFilesDir(),Intro.FILENAME_LOGIN_PATH));
-                            fileWriter.write(jsonObject.toString());
+                            fileWriter.write(json_login.toString());
                             fileWriter.flush();
                             fileWriter.close();
+                            intent.putExtra("name",json_login.getString("name"));     intent.putExtra("picture",json_login.getString("picture"));
+                            intent.putExtra("msg",json_login.getString("msg"));
+                            startActivity(intent);
+                            finish();
+                            handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
+                            Intro.eventConnect = null;
+                            Intro.eventMessage = null;
+                            return;
+
                         } catch (Exception e) {
                             e.printStackTrace();
-                            Toast.makeText(Login.this,"자동로그인 설정 실패",Toast.LENGTH_LONG).show();
                         }
-                        startActivity(intent);
-                        finish();
-                    } else {//사용자 정보가 안맞다면
-                        rootLayout.setAlpha(1f);
-                        if (isLogin)
-                            Toast.makeText(Login.this, "ID 혹은 비밀번호를 확인해 주세요.", Toast.LENGTH_LONG).show();
-                        else
-                            Toast.makeText(Login.this, "이미 사용중인 ID 입니다.", Toast.LENGTH_LONG).show();
                     }
+                    //신규사용자인 부분 , 값 자동로그인으로 저장
+                    try {
+                        rootLayout.setAlpha(1);
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("id", id);           jsonObject.put("pw", SHA_str);
+                        intent.putExtra("name","visitor");     jsonObject.put("name", "visitor");
+                        intent.putExtra("picture","");  jsonObject.put("picture", "");
+                        intent.putExtra("msg","");      jsonObject.put("msg", "");
+                        FileWriter fileWriter = new FileWriter(new File(Login.this.getFilesDir(),Intro.FILENAME_LOGIN_PATH));
+                        fileWriter.write(jsonObject.toString());
+                        fileWriter.flush();
+                        fileWriter.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(Login.this,"자동로그인 설정 실패",Toast.LENGTH_LONG).show();
+                    }
+                    startActivity(intent);
+                    finish();
+                    handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
+                    Intro.eventConnect = null;
+                    Intro.eventMessage = null;
+                } else {//사용자 정보가 안맞다면
+                    rootLayout.setAlpha(1f);
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (isLogin)
+                                Toast.makeText(Login.this, "ID 혹은 비밀번호를 확인해 주세요.", Toast.LENGTH_LONG).show();
+                            else
+                                Toast.makeText(Login.this, "이미 사용중인 ID 입니다.", Toast.LENGTH_LONG).show();
+                        }
+                    });
+
                 }
             }
-        });
+        };
     }
 
     public void onTextChangeListenerID() {

@@ -43,6 +43,11 @@ public class Intro extends AppCompatActivity {
     EditText editText;
     boolean onDraw;//그린시점확인용
     Intent intent;
+    private JSONObject sendInfo = null;//연결시 정보 보내기 용
+
+    public static EventConnect eventConnect = null;
+    public static EventMessage eventMessage = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +117,33 @@ public class Intro extends AppCompatActivity {
         WIDTH = getApplicationContext().getResources().getDisplayMetrics().widthPixels;
         HEIGHT = getApplicationContext().getResources().getDisplayMetrics().heightPixels - getStatusBarHeight();
 
-
+        eventConnect = new EventConnect() {
+            @Override
+            public void onDisconnect() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(!showingIP) {   //액티비티 안보이면
+                            selectIP_Dialog(Intro.this);
+                            Toast.makeText(Intro.this, "서버와의 연결 상태를 확인해 주세요.", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+                Log.d("asd","디스커낵트호출");
+            }
+            @Override
+            public void onConnect() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(sendInfo != null)
+                            NodeJS.getInstance().sendJson("login", sendInfo);
+                        handler.postDelayed(this,300);
+                    }
+                });
+                Log.d("asd","커낵트호출");
+            }
+        };
         NodeJS.getInstance().start(this); //공유할 nodejs객체 늦은 init 선언
 
     }
@@ -157,62 +188,41 @@ public class Intro extends AppCompatActivity {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                } else {//자동로그인 해재시 파일을 지우면됨
+                } else {//자동로그인이 아닐경우
                         intent = new Intent(Intro.this, Login.class);
                     startActivity(intent);
                     finish();
                 }
             }
-        }, delaye);
+        }, delaye);//딜레이는 인트로 화면 보여주기위해서
     }
-
     public void checkAutoLogin(final String id, final String pw, final Intent intent) throws JSONException {//자동로그인 정보 가져온걸 서버랑 비교해서 담액티비티로
-        final JSONObject jsonObject = new JSONObject();
-        jsonObject.put("id", id);
-        jsonObject.put("pw", pw);
+        sendInfo = new JSONObject();
+        sendInfo.put("id", id);
+        sendInfo.put("pw", pw);
         rootLayout.setAlpha(0.7f);
-        NodeJS.getInstance().sendJson("login", jsonObject);
-        handler.post(new Runnable() {
+        eventMessage = new EventMessage() {
             @Override
-            public void run() {
-                Log.d("asd","네트워크 상태 : "+NodeJS.STATUS+"받은 상태 "+ NodeJS.isRecv);
-               if (NodeJS.STATUS != 1) {//연결이 끊기거나 에러라면
-                    Toast.makeText(Intro.this, "서버와의 연결 상태를 확인해 주세요.", Toast.LENGTH_LONG).show();
-                    if(!showingIP) {   //액티비티 안보이면
-                        selectIP_Dialog(Intro.this);
-                        handler.postDelayed(this, 1200);
-                        return;
-                    }
-                    else{//설정창이보이고 연결이안된상태라면
-                        handler.postDelayed(this, 500);
-                        return;
-                    }
+            public void messageArrive() {//메시지받으면
+                Log.d("asd","메시지 도착 호출");
+                rootLayout.setAlpha(1);
+                if (NodeJS.getRecvBoolean()) {//그 결과가 참이라면
+                    intent.putExtra("id", id);
+                    intent.putExtra("pw", pw);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Intent intent = new Intent(Intro.this, Login.class);
+                    startActivity(intent);
+                    finish();
+                    Toast.makeText(Intro.this, "등록된 로그인 정보가 다릅니다.", Toast.LENGTH_LONG).show();
                 }
-                else {//연결이 된 상태라면
-                    if (NodeJS.isRecv) {//결과를 받았다면
-                        rootLayout.setAlpha(1);
-                        if (NodeJS.getRecvBoolean()) {//그 결과가 참이라면
-                            intent.putExtra("id", id);
-                            intent.putExtra("pw", pw);
-                            startActivity(intent);
-                            finish();
-                            return;
-                        } else {
-                            Intent intent = new Intent(Intro.this, Login.class);
-                            startActivity(intent);
-                            finish();
-                            Toast.makeText(Intro.this, "등록된 로그인 정보가 다릅니다.", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                    }
-                    else{//연결되고 결과안받았다면
-                        handler.postDelayed(this, 600);
-                        return;
-                    }
-                }
-
+                handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
+                eventMessage = null;//메시지 사용종료
+                eventConnect = null;//커넥트 사용종료
             }
-        });
+        };
+
     }
 
     //이밑에는공용으로쓰일 static 메서드
@@ -292,4 +302,13 @@ public class Intro extends AppCompatActivity {
 
         return null;
     }
+}
+
+//모든 곳에서 다양하게 쓰일 수 있도록 사용, 변수 사용후 null 초기화
+interface EventConnect {
+    void onDisconnect();
+    void onConnect();
+}
+interface EventMessage {
+    void messageArrive();
 }
