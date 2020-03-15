@@ -146,8 +146,6 @@ public class ChatRoom extends Activity implements View.OnClickListener {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d("asd","값 : "+adapter.getStatus(i));
-                Toast.makeText(ChatRoom.this,"값 : "+adapter.getStatus(i),Toast.LENGTH_LONG).show();
             }
         });
         editText_chat.setOnTouchListener(new View.OnTouchListener() {//처음 edittext눌렀을땐 반응안해서 터치로
@@ -165,7 +163,6 @@ public class ChatRoom extends Activity implements View.OnClickListener {
                 return false;
             }
         });
-
     }
     @Override
     public void onClick(View view) {

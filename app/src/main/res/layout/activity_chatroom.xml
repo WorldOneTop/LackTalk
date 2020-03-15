@@ -37,6 +37,7 @@
                 android:layout_above="@id/include_underbar"
                 android:layout_below="@id/include_actionbar"
                 android:divider="@null"
+                android:dividerHeight="0dp"
                 android:layout_marginBottom="3dp"
                 android:listSelector="@android:color/transparent"
                 android:transcriptMode="alwaysScroll"></ListView>

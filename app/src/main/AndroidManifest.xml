@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
+        <activity android:name=".ProfileActivity"></activity>
         <activity android:name=".AddActivity" />
         <activity android:name=".Login" />
         <activity android:name=".ChatList" />

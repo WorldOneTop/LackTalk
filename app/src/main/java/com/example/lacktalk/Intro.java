@@ -27,6 +27,8 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 public class Intro extends AppCompatActivity {
@@ -53,7 +55,6 @@ public class Intro extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
-//        startActivity(new Intent(this,AddActivity.class));
         init();
 
         File file = new File(this.getFilesDir(), FILENAME);
@@ -123,25 +124,26 @@ public class Intro extends AppCompatActivity {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if(!showingIP) {   //액티비티 안보이면
+                        if (!showingIP) {   //액티비티 안보이면
                             selectIP_Dialog(Intro.this);
                             Toast.makeText(Intro.this, "서버와의 연결 상태를 확인해 주세요.", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
-                Log.d("asd","디스커낵트호출");
+                Log.d("asd", "디스커낵트호출");
             }
+
             @Override
             public void onConnect() {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if(sendInfo != null)
+                        if (sendInfo != null)
                             NodeJS.getInstance().sendJson("login", sendInfo);
-                        handler.postDelayed(this,300);
+                        handler.postDelayed(this, 300);
                     }
                 });
-                Log.d("asd","커낵트호출");
+                Log.d("asd", "커낵트호출");
             }
         };
         NodeJS.getInstance().start(this); //공유할 nodejs객체 늦은 init 선언
@@ -177,25 +179,26 @@ public class Intro extends AppCompatActivity {
                     intent = new Intent(Intro.this, ChatList.class);
                     try {
                         FileReader fileReader = new FileReader(file2);
-                        char []buf = new char[2048];
+                        char[] buf = new char[2048];
                         fileReader.read(buf);
                         JSONObject jsonObject = new JSONObject(new String(buf));
                         fileReader.close();
-                        intent.putExtra("name",jsonObject.getString("name"));
-                        intent.putExtra("picture",jsonObject.getString("picture"));
-                        intent.putExtra("msg",jsonObject.getString("msg"));
-                        checkAutoLogin(jsonObject.getString("id"),jsonObject.getString("pw"),intent);
+                        intent.putExtra("name", jsonObject.getString("name"));
+                        intent.putExtra("picture", jsonObject.getString("picture"));
+                        intent.putExtra("msg", jsonObject.getString("msg"));
+                        checkAutoLogin(jsonObject.getString("id"), jsonObject.getString("pw"), intent);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 } else {//자동로그인이 아닐경우
-                        intent = new Intent(Intro.this, Login.class);
+                    intent = new Intent(Intro.this, Login.class);
                     startActivity(intent);
                     finish();
                 }
             }
         }, delaye);//딜레이는 인트로 화면 보여주기위해서
     }
+
     public void checkAutoLogin(final String id, final String pw, final Intent intent) throws JSONException {//자동로그인 정보 가져온걸 서버랑 비교해서 담액티비티로
         sendInfo = new JSONObject();
         sendInfo.put("id", id);
@@ -204,7 +207,7 @@ public class Intro extends AppCompatActivity {
         eventMessage = new EventMessage() {
             @Override
             public void messageArrive() {//메시지받으면
-                Log.d("asd","메시지 도착 호출");
+                Log.d("asd", "메시지 도착 호출");
                 rootLayout.setAlpha(1);
                 if (NodeJS.getRecvBoolean()) {//그 결과가 참이라면
                     intent.putExtra("id", id);
@@ -241,11 +244,12 @@ public class Intro extends AppCompatActivity {
         builder.setCancelable(false);
         builder.setPositiveButton("입력",
                 new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {/*override*/}});
+                    public void onClick(DialogInterface dialog, int which) {/*override*/}
+                });
         builder.setNegativeButton("취소",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        NodeJS.getInstance().setHostStart(NodeJS.HOST,context);
+                        NodeJS.getInstance().setHostStart(NodeJS.HOST, context);
                         Toast.makeText(context, "취소 되었습니다.", Toast.LENGTH_LONG).show();
                         Intro.showingIP = false;
                     }
@@ -259,7 +263,7 @@ public class Intro extends AppCompatActivity {
                 if (!ipaddressPattern.matcher(edittext.getText().toString()).matches()) {
                     Toast.makeText(context, "IP형식에 맞게 다시 입력해주세요.", Toast.LENGTH_LONG).show();
                 } else {
-                    NodeJS.getInstance().setHostStart(edittext.getText()+"",context);
+                    NodeJS.getInstance().setHostStart(edittext.getText() + "", context);
                     Toast.makeText(context, "설정 되었습니다.", Toast.LENGTH_LONG).show();
                     Intro.showingIP = false;
                     dialog.dismiss();
@@ -283,12 +287,13 @@ public class Intro extends AppCompatActivity {
         md.update(str.getBytes());
         return byteToHexString(md.digest());
     }
+
     public static String getInitialSound(String text) {
-        String[] chs = { "ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ",
-                "ㅎ" };
+        String[] chs = {"ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ",
+                "ㅎ"};
 
         if (text.length() > 0) {
-            String result="";
+            String result = "";
             for (int i = 0; i < text.length(); i++) {
                 char chName = text.charAt(i);
                 if (chName >= 0xAC00) {
@@ -301,6 +306,21 @@ public class Intro extends AppCompatActivity {
         }
 
         return null;
+    }
+    public static String dateTypeChange(String date,boolean is_diff_day){
+        String []now_arr = new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()).split("/");
+        String[] str = date.split("/");
+        if(!now_arr[0].equals(str[0]))
+            return str[0]+"."+str[1]+"."+str[2];
+        else if(is_diff_day || !now_arr[2].equals(str[2]) || !now_arr[1].equals(str[1]))
+            return str[1]+"월 "+str[2]+"일";
+        else {
+            int temp = Integer.parseInt(str[3]);
+            if(temp > 11)
+                return (temp != 12 ? temp-12 : temp)+":"+str[4] + " pm"  ;
+            else
+                return (temp != 0 ? temp : 12)+":"+str[4] + " am"  ;
+        }
     }
 }
 

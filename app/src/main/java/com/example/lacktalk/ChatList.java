@@ -31,7 +31,7 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
     private View upperLine1,upperLine2,upperLine3;
     static ChatList_In_ViewPager[] viewPager_chatList;
     private String myName,myPicture,myMsg;
-
+ChatList(){}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -135,7 +135,7 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
         }
     }
     public static String randomStr() {
-        int a = random.nextInt(50);
+        int a = random.nextInt(25);
         String result = "";
         for (int i = 0; i < a; i++) {
             result += (char) ((Math.random() * 26) + 97);

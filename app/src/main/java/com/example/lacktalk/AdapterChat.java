@@ -1,6 +1,7 @@
 package com.example.lacktalk;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,10 +22,15 @@ import java.util.Date;
 
 public class AdapterChat extends BaseAdapter implements Filterable {
     private ArrayList<ItemChat> listViewItemList = new ArrayList<ItemChat>() ;
-    String[] now_arr;
     // ListViewAdapter의 생성자
     public AdapterChat() {//채팅리스트인지 채팅방안인지 구분 필요
 
+    }
+    private class ViewHolder {
+        ImageView item_profile;
+        TextView item_name, textview_date;
+        LinearLayout layout_date;
+        RelativeLayout listview_right,listview_left;
     }
 
     // Adapter에 사용되는 데이터의 개수를 리턴. : 필수 구현
@@ -32,30 +38,60 @@ public class AdapterChat extends BaseAdapter implements Filterable {
     public int getCount() {
         return listViewItemList.size() ;
     }
+    public void showProfile(Context context, String name,String message,String picture){
+        Intent intent = new Intent(context, ProfileActivity.class);
+                intent.putExtra("name",name);
+                intent.putExtra("message",message);
+                intent.putExtra("picture",picture);
+                intent.putExtra("isMe", false);
+                context.startActivity(intent);
+    }
 
     // position에 위치한 데이터를 화면에 출력하는데 사용될 View를 리턴. : 필수 구현
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         final Context context = parent.getContext();
-        now_arr = new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()).split("/");
+        ViewHolder viewHolder;
+
+        final ItemChat listViewItem = listViewItemList.get(position);
 
         // "listview_item" Layout을 inflate하여 convertView 참조 획득.
-        if (convertView == null) {
+        if (convertView == null) {//한 화면에 그려지는거만 인가봄 그래서 공통적인거만 초기화
+            viewHolder = new ViewHolder();
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.listview_chatroom, parent, false);
+            viewHolder.item_profile = (ImageView) convertView.findViewById(R.id.item_profile);
+            viewHolder.item_name = (TextView) convertView.findViewById(R.id.item_name);
+            viewHolder.layout_date = convertView.findViewById(R.id.layout_date);
+            viewHolder.textview_date = convertView.findViewById(R.id.textview_date);
+            viewHolder.listview_right = convertView.findViewById(R.id.listview_right);
+            viewHolder.listview_left = convertView.findViewById(R.id.listview_left);
+
+            convertView.setTag(viewHolder);
+        }else{
+            viewHolder = (ViewHolder)convertView.getTag();
+        }
+
+        viewHolder.layout_date.setVisibility(View.GONE);
+        if(listViewItem.getIsme()) {
+            viewHolder.listview_right.setVisibility(View.VISIBLE);
+            viewHolder.listview_left.setVisibility(View.GONE);
+        }else{
+            viewHolder.listview_left.setVisibility(View.VISIBLE);
+            viewHolder.listview_right.setVisibility(View.GONE);
         }
         // Data Set(listViewItemList)에서 position에 위치한 데이터 참조 획득
-        ItemChat listViewItem = listViewItemList.get(position);
-        ImageView item_profile = (ImageView) convertView.findViewById(R.id.item_profile);
-        TextView item_name = (TextView) convertView.findViewById(R.id.item_name);
+
+//        ImageView item_profile = (ImageView) convertView.findViewById(R.id.item_profile);
+//        TextView item_name = (TextView) convertView.findViewById(R.id.item_name);
         TextView item_text = (TextView) convertView.findViewById(R.id.item_text);
         TextView item_time = (TextView) convertView.findViewById(R.id.item_time);
-
-        //이 밑 세개는 날짜 보여주기 위해서
-        LinearLayout layout_date = convertView.findViewById(R.id.layout_date);
-        TextView textview_date = convertView.findViewById(R.id.textview_date);
-        layout_date.setVisibility(View.GONE);
-
+//
+//        //이 밑 세개는 날짜 보여주기 위해서
+//        LinearLayout layout_date = convertView.findViewById(R.id.layout_date);
+//        TextView textview_date = convertView.findViewById(R.id.textview_date);
+//        layout_date.setVisibility(View.GONE);
+//
         if(!listViewItem.getIsme()) {       // 상대방이 얘기했을때 필요한 뷰 선언
             convertView.findViewById(R.id.listview_left).setVisibility(View.VISIBLE);
             convertView.findViewById(R.id.listview_right).setVisibility(View.GONE);
@@ -68,48 +104,55 @@ public class AdapterChat extends BaseAdapter implements Filterable {
         }
 
 
-        item_name.setText(listViewItem.getName());
+        viewHolder.item_name.setText(listViewItem.getName());
         item_text.setText(listViewItem.getText());
+
+        viewHolder.item_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showProfile(parent.getContext(),listViewItem.getName(),"","");
+            }
+        });
 //설정이 계속 유지되는 듯 그래서 상태 바뀔때마다 바꾼것 모두 재설정
 
+        viewHolder.item_profile.setMaxHeight(0);
         if(position==0 || !listViewItemList.get(position-1).getTime().substring(0,10).equals(listViewItem.getTime().substring(0,10))){//첫대화이거나 전 대화와 날짜가달랐을때
-            textview_date.setText(dateTypeChange(listViewItem.getTime(),true)) ;
-            layout_date.setVisibility(View.VISIBLE);
-
-            item_profile.setImageResource(R.drawable.defaultimg);
-            item_profile.setMaxHeight(3000);
-            item_profile.setVisibility(View.VISIBLE);
+            viewHolder.textview_date.setText(Intro.dateTypeChange(listViewItem.getTime(),true)) ;
+            viewHolder.layout_date.setVisibility(View.VISIBLE);
+            viewHolder.item_profile.setImageResource(R.drawable.defaultimg);
+            viewHolder.item_profile.setMaxHeight(3000);
+            viewHolder.item_profile.setVisibility(View.VISIBLE);
             item_text.setBackgroundResource(listViewItem.getIsme() ? R.drawable.rightchat : R.drawable.leftchat);
-            item_name.setVisibility(View.VISIBLE);
+            viewHolder.item_name.setVisibility(View.VISIBLE);
         }
         //프사및닉넴 및 꼬퉁이 전용 값설정  및 날짜도
-        else if(listViewItemList.get(position-1).getIsme() != listViewItem.getIsme()){//처음이거나 한사람의 말의 시작
-            item_profile.setImageResource(R.drawable.defaultimg);
-            item_profile.setMaxHeight(3000);
-            item_profile.setVisibility(View.VISIBLE);
+        else if(listViewItemList.get(position-1).getIsme() != listViewItem.getIsme()){//한사람의 말의 시작
+            viewHolder.item_profile.setImageResource(R.drawable.defaultimg);
+            viewHolder.item_profile.setMaxHeight(3000);
+            viewHolder.item_profile.setVisibility(View.VISIBLE);
             item_text.setBackgroundResource(listViewItem.getIsme() ? R.drawable.rightchat : R.drawable.leftchat);
-            item_name.setVisibility(View.VISIBLE);
+            viewHolder.item_name.setVisibility(View.VISIBLE);
         }
         else{
-            item_profile.setVisibility(View.INVISIBLE);
-            item_profile.setMaxHeight(0);
+            viewHolder.item_profile.setVisibility(View.INVISIBLE);
+            viewHolder.item_profile.setMaxHeight(0);
             item_text.setBackgroundResource(R.drawable.chat);
-            item_name.setVisibility(View.GONE);
+            viewHolder.item_name.setVisibility(View.GONE);
         }
         //시간 전용 값설정
         if(position+1 == listViewItemList.size()){//마지막이니 시간 무조건, out of index 방지
-            item_time.setText(dateTypeChange(listViewItem.getTime(),false));
+            item_time.setText(Intro.dateTypeChange(listViewItem.getTime(),false));
             item_time.setVisibility(View.VISIBLE);
         }
         else if(listViewItemList.get(position+1).getIsme() != listViewItem.getIsme()){//다음 말이 다른사람이 말했을때
-            item_time.setText(dateTypeChange(listViewItem.getTime(),false));
+            item_time.setText(Intro.dateTypeChange(listViewItem.getTime(),false));
             item_time.setVisibility(View.VISIBLE);
         }
         else if(listViewItemList.get(position+1).getTime().equals(listViewItem.getTime())) {//다음 시간이랑 지금이랑 같으면 지금꺼안보이게
             item_time.setVisibility(View.GONE);
         }
         else {//위아래시간이 달랐을때
-            item_time.setText(dateTypeChange(listViewItem.getTime(),false));
+            item_time.setText(Intro.dateTypeChange(listViewItem.getTime(),false));
             item_time.setVisibility(View.VISIBLE);
 
         }
@@ -134,28 +177,15 @@ public class AdapterChat extends BaseAdapter implements Filterable {
         return listViewItemList.get(position) ;
     }
     //날짜 계산해서 하루까진 시간으로, 년도안바뀐데까진 월일, 년도바뀌면 년도월일
-    public String dateTypeChange(String date,boolean is_diff_day){
-        String[] str = date.split("/");
-        if(!now_arr[0].equals(str[0]))
-            return str[0]+"."+str[1]+"."+str[2];
-        else if(is_diff_day || !now_arr[2].equals(str[2]) || !now_arr[1].equals(str[1]))
-            return str[1]+"월 "+str[2]+"일";
-        else {
-            int temp = Integer.parseInt(str[3]);
-            if(temp > 11)
-                return (temp != 12 ? temp-12 : temp)+":"+str[4] + " pm"  ;
-            else
-                return (temp != 0 ? temp : 12)+":"+str[4] + " am"  ;
-        }
-    }
-    public Object getStatus(int position){
-        return "position : "+position+"  말한사람 : "+listViewItemList.get(position).getIsme()+"\n말한시각 : "+listViewItemList.get(position).getTime()+"\n닉네임 : "+listViewItemList.get(position).getName();
-    }
+
+
 
     @Override
     public Filter getFilter() {
         return null;
     }
+
+
 }
 
 
