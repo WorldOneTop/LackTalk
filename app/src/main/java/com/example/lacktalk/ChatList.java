@@ -17,7 +17,6 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import java.util.Random;
 
 public class ChatList extends AppCompatActivity implements View.OnClickListener{
     private Intent intent;
@@ -38,8 +37,6 @@ ChatList(){}
         setContentView(R.layout.activity_viewpager);
 
         init();
-
-
     }
 
     //어댑터 안에서 각각의 아이템을 데이터로서 관리한다
@@ -128,24 +125,6 @@ ChatList(){}
         });
 
     }
-    static Random random = new Random();
-    public static void randomAdd(){
-        for(int i=0;i<2;i++) {
-            viewPager_chatList[i].addItem("", randomStr(), randomStr(),-1,"");
-        }
-    }
-    public static String randomStr() {
-        int a = random.nextInt(25);
-        String result = "";
-        for (int i = 0; i < a; i++) {
-            result += (char) ((Math.random() * 26) + 97);
-        }
-        return result;
-    }
-    public static void AddActSet(){
-        AddActivity.adapterUser = viewPager_chatList[0].getAdapterList();
-    }
-
     @Override
     public void onClick(View view) {
         switch (view.getId()){

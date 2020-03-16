@@ -13,18 +13,29 @@
         android:layout_height="wrap_content" />
 
     <HorizontalScrollView
-        android:layout_below="@id/add_actionbar"
         android:id="@+id/add_scrollview"
+        android:layout_below="@id/add_actionbar"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:layout_height="70dp">
         <LinearLayout
             android:id="@+id/add_linearLayout"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="horizontal">
         </LinearLayout>
     </HorizontalScrollView>
+    <ImageView
+        android:id="@+id/add_resultImg"
+        android:background="#fff"
+        android:layout_alignEnd="@id/add_scrollview"
+        android:layout_alignTop="@id/add_scrollview"
+        android:layout_alignBottom="@id/add_scrollview"
+        android:src="@drawable/icon_addchat"
+        android:layout_width="42dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:visibility="gone"/>
 
     <EditText
         android:id="@+id/add_editText"
@@ -32,7 +43,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
-        android:layout_marginEnd="5dp" />
+        android:layout_marginEnd="5dp"
+        android:backgroundTint = "#4f4f4f"/>
     <ImageView
         android:id="@+id/add_search"
         android:layout_alignEnd="@id/add_editText"

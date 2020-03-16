@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -40,6 +41,8 @@ public class Intro extends AppCompatActivity {
     public static final String FILENAME_IP = "ip.txt";
     public static boolean showingIP = false;
     public static String ID,PW;
+    public static DisplayMetrics outMetrics;
+
     Handler handler;
     ConstraintLayout rootLayout;
     InputMethodManager imm;
@@ -120,6 +123,12 @@ public class Intro extends AppCompatActivity {
         //status bar의 크기가 무시되므로 빼줌
         WIDTH = getApplicationContext().getResources().getDisplayMetrics().widthPixels;
         HEIGHT = getApplicationContext().getResources().getDisplayMetrics().heightPixels - getStatusBarHeight();
+
+        //dp to px
+        outMetrics = new DisplayMetrics();
+        Log.d("asd","       "+outMetrics.densityDpi);
+        getWindowManager().getDefaultDisplay().getMetrics(outMetrics);
+        Log.d("asd","       "+outMetrics.densityDpi);
 
         eventConnect = new EventConnect() {
             @Override
@@ -326,6 +335,9 @@ public class Intro extends AppCompatActivity {
             else
                 return (temp != 0 ? temp : 12)+":"+str[4] + " am"  ;
         }
+    }
+    public static int dpTopx(int dp){//dp값 넣으면 픽셀값으로 반환함
+        return  dp * (outMetrics.densityDpi/160);//160dpi가 1px=1dp
     }
 }
 

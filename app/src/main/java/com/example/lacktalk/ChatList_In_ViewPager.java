@@ -217,11 +217,14 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                 }
                 break;
             case R.id.icon_add:
-                AddActivity.isFriend = isUserList;
+                Intent intent = new Intent(context, AddActivity.class);
+                intent.putExtra("isFriend",isUserList);
                 if (isUserList) {
-                    startActivity(new Intent(context, AddActivity.class));
+                    startActivity(intent);
                 } else {
-                    ChatList.randomAdd();
+
+                    intent.putExtra("itemList",ChatList.viewPager_chatList[0].adapterList.getListViewItemList());
+                    startActivity(intent);
 
 //                    ChatList.AddActSet();
 //                    startActivity(new Intent(context, AddActivity.class));
@@ -240,13 +243,6 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         context = c;
         isUserList = i;
         return this;
-    }
-    public AdapterList getAdapterList(){
-        return adapterList;
-    }
-    public void changeItemList(ItemList itemList ,int position){
-        adapterList.changeItem(itemList,position);
-        adapterList.notifyDataSetChanged();
     }
 
 }
