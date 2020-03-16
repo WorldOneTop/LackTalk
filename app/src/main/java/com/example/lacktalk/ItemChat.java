@@ -1,5 +1,6 @@
 package com.example.lacktalk;
 
+import java.io.Serializable;
 import java.util.Date;
 
 public class ItemChat {
@@ -55,7 +56,7 @@ public class ItemChat {
 }
 
 
-class ItemList {
+class ItemList implements Serializable {
     private String imagePath;
     private String name;
     private String message;

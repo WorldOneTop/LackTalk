@@ -29,7 +29,7 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener{
     private ViewPager pager;
     PagerAdapter pagerAdapter;
     private View upperLine1,upperLine2,upperLine3;
-    static ChatList_In_ViewPager[] viewPager_chatList;
+    public static ChatList_In_ViewPager[] viewPager_chatList;
     private String myName,myPicture,myMsg;
 ChatList(){}
     @Override
@@ -48,7 +48,7 @@ ChatList(){}
         @Override
         public Fragment getItem(int position) {//생성자가 안되다 되다하는 현상 발견으로 인해 만든 안전장치 safeVar
             if(position==2) return new Option(ChatList.this);
-            return viewPager_chatList[position] = new ChatList_In_ViewPager(getApplicationContext(), position == 0 ? true : false,myName,myPicture,myMsg).safeVar(getApplicationContext(), position == 0 ? true : false);
+            return viewPager_chatList[position] = new ChatList_In_ViewPager(getApplicationContext(), position == 0 ? true : false).safeVar(getApplicationContext(), position == 0 ? true : false);
         }
         @Override
         public int getCount() {

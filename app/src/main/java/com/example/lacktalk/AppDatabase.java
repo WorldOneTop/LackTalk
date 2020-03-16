@@ -82,6 +82,9 @@ interface MyDao {
     @Query("DELETE FROM db_recode WHERE recode_num = :roomNum")//나간 채팅방 내역 지우기
     void deleteRoomChat(int roomNum);
 
+    @Query("UPDATE db_user SET name = :name WHERE user_num=:num;")//친구 이름 바꾸기
+    void updateFriendName(int num,String name);
+
     @Query("SELECT * FROM db_User")
     List<db_User> getUserAll();
 

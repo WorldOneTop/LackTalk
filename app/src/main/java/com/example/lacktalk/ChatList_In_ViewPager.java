@@ -3,6 +3,7 @@ package com.example.lacktalk;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -22,6 +23,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.List;
 
 public class ChatList_In_ViewPager extends Fragment implements View.OnClickListener {
@@ -36,17 +42,14 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
     private RelativeLayout searchLayout;
     private EditText searchEdit;
     private InputMethodManager imm;
-
+    private Handler handler;
 
     ChatList_In_ViewPager() {
     }//앱 재실행 오류 이슈 떄문에 작성만
 
-    ChatList_In_ViewPager(Context c, boolean i, String a, String b, String cc) {
+    ChatList_In_ViewPager(Context c, boolean i) {
         context = c;
         isUserList = i;
-        myName = a;
-        myPicture = b;
-        myMsg = cc;
     }
 
     @Nullable
@@ -59,6 +62,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
     }
 
     private void init() {
+        handler = new Handler();
         rootView.findViewById(R.id.include_actionbar).findViewById(R.id.action_bar_friend).setVisibility(View.VISIBLE);
 
         //채팅방 위에 액션바(뒤로가기 이름 등등 ) 뷰 선언 및 보이게
@@ -80,33 +84,57 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         listView.setAdapter(adapterList);
 
         imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);//키보드 이벤트 발생용
-
-        if (isUserList) {
-            adapterList.addItem("나", "", "들어갈자리",-1,"");
-            adapterList.addItem(myPicture, myName, myMsg,-1,"");//나자신도 추가해야함
-            adapterList.addItem("구분선", "", "친구들몇명들어갈자리",-1,"");
-
-            new Thread(){
-                @Override
-                public void run() {
-                    List<db_User> list = AppDatabase.getInstance(context).myDao().getUserAll();
-                    for(db_User user : list){
-                        adapterList.addItem(user.picture,user.name,user.msg,user.user_num,user.id);
-                    }
-                    adapterList.notifyDataSetChanged();
-
-                }
-            }.start();
-
+        if(isUserList) {
             actionbar_main.setText("친구들");
-
-        } else {
+            initList();
+        }
+        else {
             actionbar_add.setImageResource(R.drawable.icon_addchat);
             actionbar_main.setText("채팅방들");
         }
 
 
         init_OnClick();
+    }
+    public void initList(){
+        try {
+            adapterList.clearData();
+            FileReader fileReader = new FileReader(new File(context.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
+            char[] buf = new char[2048];
+            fileReader.read(buf);
+            JSONObject jsonObject = new JSONObject(new String(buf));
+            fileReader.close();
+
+            myName = jsonObject.getString("name");
+            myPicture = jsonObject.getString("picture");
+            myMsg = jsonObject.getString("msg");
+
+            if (isUserList) {
+                adapterList.addItem("나", "", "들어갈자리", -1, "");
+                adapterList.addItem(myPicture, myName, myMsg, -1, "");//나자신도 추가해야함
+                adapterList.addItem("구분선", "", "친구들몇명들어갈자리", -1, "");
+
+                new Thread() {
+                    @Override
+                    public void run() {
+                        List<db_User> list = AppDatabase.getInstance(context).myDao().getUserAll();
+                        for (db_User user : list) {
+                            adapterList.addItem(user.picture, user.name, user.msg, user.user_num, user.id);
+                        }
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                adapterList.notifyDataSetChanged();
+                            }
+                        });
+
+                    }
+                }.start();
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void init_OnClick() {
@@ -141,6 +169,9 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                                                     intent.putExtra("message",item.getMessage());
                                                     intent.putExtra("picture",item.getImagePath());
                                                     intent.putExtra("isMe", i == 1);
+                                                    intent.putExtra("num", item.getPrimary_num());
+                                                    intent.putExtra("position",i);
+                                                    intent.putExtra("item",adapterList.getItem(i));
                                                     if (i != 0 && i != 2) {
                                                         startActivity(intent);
                                                     }
@@ -213,6 +244,11 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
     public AdapterList getAdapterList(){
         return adapterList;
     }
+    public void changeItemList(ItemList itemList ,int position){
+        adapterList.changeItem(itemList,position);
+        adapterList.notifyDataSetChanged();
+    }
+
 }
 
 

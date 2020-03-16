@@ -13,9 +13,6 @@ var sql = mysql.createConnection({
 
 sql.connect();
 
-sql.query("SELECT id,picture,msg FROM user; ",function(error,results,fields){
-		console.log(results);
-	});
 
 io.on('connection', function(socket){	//연결 되면 이벤트 설정
 	console.log('a user connected');
@@ -40,10 +37,13 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 	socket.on('userInfo',function(msg){
 		sql.query("SELECT id,name,picture,msg FROM user WHERE id='"+msg.id+"'; ",function(error,results,fields){
 			io.emit('userInfo',results[0]);
-			
 		});
 	});
+	socket.on('userUpdate',function(msg){
+		sql.query("UPDATE user SET name = '"+msg.name+"',picture='"+msg.picture+"',msg='"+msg.msg+"' WHERE id='"+msg.id+"'; ",function(error,results,fields){
+		});
 
+	});
 
 });
 login_callback = function(id,pw, callback){

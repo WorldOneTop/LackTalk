@@ -223,28 +223,22 @@ class AdapterList extends BaseAdapter implements Filterable {
         viewHolder.message.setText(listViewItem.getMessage());
 //        viewHolder.picture.setImageResource();
 
-        if (isUserList) {
-            if (listViewItem.getMessage().isEmpty())
-                viewHolder.message.setVisibility(View.GONE);
-            else
-                viewHolder.message.setVisibility(View.VISIBLE);
-        } else {
-            viewHolder.message.setBackground(null);
-        }
-
-
         //디폴트 설정
         if (isUserList) {
             init_UserList(viewHolder, position);
         } else {
-
+            viewHolder.message.setBackground(null);
         }
+
         return convertView;
     }
 
     // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
     public void addItem(String imagePath, String name, String text,int pnum,String idd) {
         listViewItemList.add(new ItemList(imagePath, name, text,pnum,idd));
+    }
+    public void clearData(){
+        listViewItemList.clear();
     }
 
     @Override// 지정한 위치(position)에 있는 데이터와 관계된 아이템(row)의 ID를 리턴. : 필수 구현
@@ -260,6 +254,10 @@ class AdapterList extends BaseAdapter implements Filterable {
     @Override
     public int getCount() {
         return filteredItemList.size();
+    }
+
+    public void changeItem(ItemList itemList,int position){
+        listViewItemList.set(position,itemList);
     }
 
     public void init_UserList(ViewHolder viewHolder, int position) {
@@ -282,7 +280,10 @@ class AdapterList extends BaseAdapter implements Filterable {
         } else {//이외 부분
             viewHolder.picture.setVisibility(View.VISIBLE);
             viewHolder.name.setVisibility(View.VISIBLE);
-            viewHolder.message.setVisibility(View.VISIBLE);
+            if(listViewItemList.get(position).getMessage().isEmpty())
+                viewHolder.message.setVisibility(View.GONE);
+            else
+                viewHolder.message.setVisibility(View.VISIBLE);
             viewHolder.first_text.setVisibility(View.GONE);
             viewHolder.relativeLayout.setVisibility(View.GONE);
         }
