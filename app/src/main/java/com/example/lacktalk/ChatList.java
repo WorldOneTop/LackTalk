@@ -131,7 +131,7 @@ ChatList(){}
     static Random random = new Random();
     public static void randomAdd(){
         for(int i=0;i<2;i++) {
-            viewPager_chatList[i].addItem("", randomStr(), randomStr());
+            viewPager_chatList[i].addItem("", randomStr(), randomStr(),-1,"");
         }
     }
     public static String randomStr() {
@@ -142,6 +142,10 @@ ChatList(){}
         }
         return result;
     }
+    public static void AddActSet(){
+        AddActivity.adapterUser = viewPager_chatList[0].getAdapterList();
+    }
+
     @Override
     public void onClick(View view) {
         switch (view.getId()){

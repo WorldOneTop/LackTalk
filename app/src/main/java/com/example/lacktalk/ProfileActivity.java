@@ -5,11 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,8 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.chrisbanes.photoview.PhotoView;
-
-import java.io.File;
 
 public class ProfileActivity extends AppCompatActivity {
     PhotoView photoView;
@@ -51,6 +46,8 @@ public class ProfileActivity extends AppCompatActivity {
         name = findViewById(R.id.profile_name);
         message = findViewById(R.id.profile_message);
 
+        name.setText(intent.getStringExtra("name"));
+        message.setText(intent.getStringExtra("message"));
 //        intent.putExtra("name",name);
 //        intent.putExtra("message",message);
 //        intent.putExtra("picture",picture);
@@ -91,7 +88,6 @@ public class ProfileActivity extends AppCompatActivity {
                         .show();
             }
         });
-
     }
     public void initOne(){//나를 누르면 편집모드로
         Button editButton = new Button(this);

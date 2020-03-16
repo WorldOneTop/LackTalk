@@ -20,31 +20,34 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class AdapterChat extends BaseAdapter implements Filterable {
-    private ArrayList<ItemChat> listViewItemList = new ArrayList<ItemChat>() ;
+public class AdapterChat extends BaseAdapter {
+    private ArrayList<ItemChat> listViewItemList = new ArrayList<ItemChat>();
+
     // ListViewAdapter의 생성자
     public AdapterChat() {//채팅리스트인지 채팅방안인지 구분 필요
 
     }
+
     private class ViewHolder {
         ImageView item_profile;
         TextView item_name, textview_date;
         LinearLayout layout_date;
-        RelativeLayout listview_right,listview_left;
+        RelativeLayout listview_right, listview_left;
     }
 
     // Adapter에 사용되는 데이터의 개수를 리턴. : 필수 구현
     @Override
     public int getCount() {
-        return listViewItemList.size() ;
+        return listViewItemList.size();
     }
-    public void showProfile(Context context, String name,String message,String picture){
+
+    public void showProfile(Context context, String name, String message, String picture) {
         Intent intent = new Intent(context, ProfileActivity.class);
-                intent.putExtra("name",name);
-                intent.putExtra("message",message);
-                intent.putExtra("picture",picture);
-                intent.putExtra("isMe", false);
-                context.startActivity(intent);
+        intent.putExtra("name", name);
+        intent.putExtra("message", message);
+        intent.putExtra("picture", picture);
+        intent.putExtra("isMe", false);
+        context.startActivity(intent);
     }
 
     // position에 위치한 데이터를 화면에 출력하는데 사용될 View를 리턴. : 필수 구현
@@ -68,15 +71,15 @@ public class AdapterChat extends BaseAdapter implements Filterable {
             viewHolder.listview_left = convertView.findViewById(R.id.listview_left);
 
             convertView.setTag(viewHolder);
-        }else{
-            viewHolder = (ViewHolder)convertView.getTag();
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
         viewHolder.layout_date.setVisibility(View.GONE);
-        if(listViewItem.getIsme()) {
+        if (listViewItem.getIsme()) {
             viewHolder.listview_right.setVisibility(View.VISIBLE);
             viewHolder.listview_left.setVisibility(View.GONE);
-        }else{
+        } else {
             viewHolder.listview_left.setVisibility(View.VISIBLE);
             viewHolder.listview_right.setVisibility(View.GONE);
         }
@@ -92,11 +95,10 @@ public class AdapterChat extends BaseAdapter implements Filterable {
 //        TextView textview_date = convertView.findViewById(R.id.textview_date);
 //        layout_date.setVisibility(View.GONE);
 //
-        if(!listViewItem.getIsme()) {       // 상대방이 얘기했을때 필요한 뷰 선언
+        if (!listViewItem.getIsme()) {       // 상대방이 얘기했을때 필요한 뷰 선언
             convertView.findViewById(R.id.listview_left).setVisibility(View.VISIBLE);
             convertView.findViewById(R.id.listview_right).setVisibility(View.GONE);
-        }
-        else{               //내가얘기했을때 필요한 뷰 선언
+        } else {               //내가얘기했을때 필요한 뷰 선언
             item_text = (TextView) convertView.findViewById(R.id.item_textR);
             item_time = (TextView) convertView.findViewById(R.id.item_timeR);
             convertView.findViewById(R.id.listview_right).setVisibility(View.VISIBLE);
@@ -110,14 +112,14 @@ public class AdapterChat extends BaseAdapter implements Filterable {
         viewHolder.item_profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showProfile(parent.getContext(),listViewItem.getName(),"","");
+                showProfile(parent.getContext(), listViewItem.getName(), "", "");
             }
         });
 //설정이 계속 유지되는 듯 그래서 상태 바뀔때마다 바꾼것 모두 재설정
 
         viewHolder.item_profile.setMaxHeight(0);
-        if(position==0 || !listViewItemList.get(position-1).getTime().substring(0,10).equals(listViewItem.getTime().substring(0,10))){//첫대화이거나 전 대화와 날짜가달랐을때
-            viewHolder.textview_date.setText(Intro.dateTypeChange(listViewItem.getTime(),true)) ;
+        if (position == 0 || !listViewItemList.get(position - 1).getTime().substring(0, 10).equals(listViewItem.getTime().substring(0, 10))) {//첫대화이거나 전 대화와 날짜가달랐을때
+            viewHolder.textview_date.setText(Intro.dateTypeChange(listViewItem.getTime(), true));
             viewHolder.layout_date.setVisibility(View.VISIBLE);
             viewHolder.item_profile.setImageResource(R.drawable.defaultimg);
             viewHolder.item_profile.setMaxHeight(3000);
@@ -126,74 +128,63 @@ public class AdapterChat extends BaseAdapter implements Filterable {
             viewHolder.item_name.setVisibility(View.VISIBLE);
         }
         //프사및닉넴 및 꼬퉁이 전용 값설정  및 날짜도
-        else if(listViewItemList.get(position-1).getIsme() != listViewItem.getIsme()){//한사람의 말의 시작
+        else if (listViewItemList.get(position - 1).getIsme() != listViewItem.getIsme()) {//한사람의 말의 시작
             viewHolder.item_profile.setImageResource(R.drawable.defaultimg);
             viewHolder.item_profile.setMaxHeight(3000);
             viewHolder.item_profile.setVisibility(View.VISIBLE);
             item_text.setBackgroundResource(listViewItem.getIsme() ? R.drawable.rightchat : R.drawable.leftchat);
             viewHolder.item_name.setVisibility(View.VISIBLE);
-        }
-        else{
+        } else {
             viewHolder.item_profile.setVisibility(View.INVISIBLE);
             viewHolder.item_profile.setMaxHeight(0);
             item_text.setBackgroundResource(R.drawable.chat);
             viewHolder.item_name.setVisibility(View.GONE);
         }
         //시간 전용 값설정
-        if(position+1 == listViewItemList.size()){//마지막이니 시간 무조건, out of index 방지
-            item_time.setText(Intro.dateTypeChange(listViewItem.getTime(),false));
+        if (position + 1 == listViewItemList.size()) {//마지막이니 시간 무조건, out of index 방지
+            item_time.setText(Intro.dateTypeChange(listViewItem.getTime(), false));
             item_time.setVisibility(View.VISIBLE);
-        }
-        else if(listViewItemList.get(position+1).getIsme() != listViewItem.getIsme()){//다음 말이 다른사람이 말했을때
-            item_time.setText(Intro.dateTypeChange(listViewItem.getTime(),false));
+        } else if (listViewItemList.get(position + 1).getIsme() != listViewItem.getIsme()) {//다음 말이 다른사람이 말했을때
+            item_time.setText(Intro.dateTypeChange(listViewItem.getTime(), false));
             item_time.setVisibility(View.VISIBLE);
-        }
-        else if(listViewItemList.get(position+1).getTime().equals(listViewItem.getTime())) {//다음 시간이랑 지금이랑 같으면 지금꺼안보이게
+        } else if (listViewItemList.get(position + 1).getTime().equals(listViewItem.getTime())) {//다음 시간이랑 지금이랑 같으면 지금꺼안보이게
             item_time.setVisibility(View.GONE);
-        }
-        else {//위아래시간이 달랐을때
-            item_time.setText(Intro.dateTypeChange(listViewItem.getTime(),false));
+        } else {//위아래시간이 달랐을때
+            item_time.setText(Intro.dateTypeChange(listViewItem.getTime(), false));
             item_time.setVisibility(View.VISIBLE);
 
         }
-
 
 
         return convertView;
     }
+
     // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
-    public void addItem(String imagePath, String name, String text, String time,boolean isme) {
+    public void addItem(String imagePath, String name, String text, String time, boolean isme) {
         listViewItemList.add(new ItemChat(imagePath, name, text, time, isme));
     }
+
     // 지정한 위치(position)에 있는 데이터와 관계된 아이템(row)의 ID를 리턴. : 필수 구현
     @Override
     public long getItemId(int position) {
-        return position ;
+        return position;
     }
 
     // 지정한 위치(position)에 있는 데이터 리턴 : 필수 구현
     @Override
     public Object getItem(int position) {
-        return listViewItemList.get(position) ;
+        return listViewItemList.get(position);
     }
     //날짜 계산해서 하루까진 시간으로, 년도안바뀐데까진 월일, 년도바뀌면 년도월일
-
-
-
-    @Override
-    public Filter getFilter() {
-        return null;
-    }
 
 
 }
 
 
-
 class AdapterList extends BaseAdapter implements Filterable {
     private ArrayList<ItemList> listViewItemList = new ArrayList<ItemList>();//원본이 저장되는 아이템
     private ArrayList<ItemList> filteredItemList = listViewItemList;//필터해서보여질아이템리스트
-    private boolean isUserList;
+    private boolean isUserList, isFilter = false;
     private MyFilter myFilter;
 
     public AdapterList(boolean s) {
@@ -230,32 +221,30 @@ class AdapterList extends BaseAdapter implements Filterable {
 
         viewHolder.name.setText(listViewItem.getName());
         viewHolder.message.setText(listViewItem.getMessage());
+//        viewHolder.picture.setImageResource();
 
-
-        if(isUserList) {
+        if (isUserList) {
             if (listViewItem.getMessage().isEmpty())
-                viewHolder.message.setVisibility(View.INVISIBLE);
-            else viewHolder.message.setVisibility(View.VISIBLE);
-        }
-        else{
+                viewHolder.message.setVisibility(View.GONE);
+            else
+                viewHolder.message.setVisibility(View.VISIBLE);
+        } else {
             viewHolder.message.setBackground(null);
         }
-
 
 
         //디폴트 설정
         if (isUserList) {
             init_UserList(viewHolder, position);
-        }
-        else{
+        } else {
 
         }
         return convertView;
     }
 
     // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
-    public void addItem(String imagePath, String name, String text) {
-        listViewItemList.add(new ItemList(imagePath, name, text));
+    public void addItem(String imagePath, String name, String text,int pnum,String idd) {
+        listViewItemList.add(new ItemList(imagePath, name, text,pnum,idd));
     }
 
     @Override// 지정한 위치(position)에 있는 데이터와 관계된 아이템(row)의 ID를 리턴. : 필수 구현
@@ -274,7 +263,7 @@ class AdapterList extends BaseAdapter implements Filterable {
     }
 
     public void init_UserList(ViewHolder viewHolder, int position) {
-        if (0 <= position && position < 3) { // 초기화 3개 부문
+        if (0 <= position && position < 3 && !isFilter) { // 초기화 3개 부문
             viewHolder.picture.setVisibility(View.GONE);
             viewHolder.name.setVisibility(View.GONE);
             viewHolder.message.setVisibility(View.GONE);
@@ -309,9 +298,11 @@ class AdapterList extends BaseAdapter implements Filterable {
 
     private class MyFilter extends Filter {
         boolean isUserList;
-        MyFilter(boolean i){
+
+        MyFilter(boolean i) {
             isUserList = i;
         }
+
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             FilterResults results = new FilterResults();
@@ -319,12 +310,18 @@ class AdapterList extends BaseAdapter implements Filterable {
             if (charSequence == null || charSequence.length() == 0) {
                 results.values = listViewItemList;
                 results.count = listViewItemList.size();
+                isFilter = false;
             } else {
+                isFilter = true;
                 ArrayList<ItemList> itemList = new ArrayList<ItemList>();
 
                 for (ItemList item : listViewItemList) {
-                    if (item.getName().toUpperCase().contains(charSequence.toString().toUpperCase())){
-                        itemList.add(item);
+                    if (!item.getName().isEmpty()) {
+                        if (item.getName().toUpperCase().contains(charSequence.toString().toUpperCase())) {
+                            itemList.add(item);//영어, 한글 검색
+                        } else if (item.getInitial().contains(charSequence.toString())) {
+                            itemList.add(item);//한글 초성검색
+                        }
                     }
                 }
 

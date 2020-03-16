@@ -39,6 +39,7 @@ public class Intro extends AppCompatActivity {
     public static final String FILENAME_LOGIN_PATH = "autoLoginInfo.txt";
     public static final String FILENAME_IP = "ip.txt";
     public static boolean showingIP = false;
+    public static String ID,PW;
     Handler handler;
     ConstraintLayout rootLayout;
     InputMethodManager imm;
@@ -49,6 +50,8 @@ public class Intro extends AppCompatActivity {
 
     public static EventConnect eventConnect = null;
     public static EventMessage eventMessage = null;
+    public static EventBoolean eventBoolean = null;
+    public static EventUserInfo eventUserInfo = null;
 
 
     @Override
@@ -138,12 +141,12 @@ public class Intro extends AppCompatActivity {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
+                        Log.d("asd", "커낵트호출"+(sendInfo == null));
                         if (sendInfo != null)
                             NodeJS.getInstance().sendJson("login", sendInfo);
-                        handler.postDelayed(this, 300);
+                        handler.postDelayed(this, 500);
                     }
                 });
-                Log.d("asd", "커낵트호출");
             }
         };
         NodeJS.getInstance().start(this); //공유할 nodejs객체 늦은 init 선언
@@ -204,14 +207,14 @@ public class Intro extends AppCompatActivity {
         sendInfo.put("id", id);
         sendInfo.put("pw", pw);
         rootLayout.setAlpha(0.7f);
-        eventMessage = new EventMessage() {
+        eventBoolean = new EventBoolean() {
             @Override
             public void messageArrive() {//메시지받으면
-                Log.d("asd", "메시지 도착 호출");
+                Log.d("asd", "메시지 도착 호출"+NodeJS.getRecvBoolean());
                 rootLayout.setAlpha(1);
                 if (NodeJS.getRecvBoolean()) {//그 결과가 참이라면
-                    intent.putExtra("id", id);
-                    intent.putExtra("pw", pw);
+                    ID = id;
+                    PW = pw;
                     startActivity(intent);
                     finish();
                 } else {
@@ -221,7 +224,7 @@ public class Intro extends AppCompatActivity {
                     Toast.makeText(Intro.this, "등록된 로그인 정보가 다릅니다.", Toast.LENGTH_LONG).show();
                 }
                 handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
-                eventMessage = null;//메시지 사용종료
+                eventBoolean = null;//메시지 사용종료
                 eventConnect = null;//커넥트 사용종료
             }
         };
@@ -289,23 +292,25 @@ public class Intro extends AppCompatActivity {
     }
 
     public static String getInitialSound(String text) {
-        String[] chs = {"ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ",
-                "ㅎ"};
+        if(text != null && text.length()!=0) {
+            String[] chs = {"ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ",
+                    "ㅎ"};
 
-        if (text.length() > 0) {
-            String result = "";
-            for (int i = 0; i < text.length(); i++) {
-                char chName = text.charAt(i);
-                if (chName >= 0xAC00) {
-                    int uniVal = chName - 0xAC00;
-                    int cho = ((uniVal - (uniVal % 28)) / 28) / 21;
-                    result += chs[cho];
+            if (text.length() > 0) {
+                String result = "";
+                for (int i = 0; i < text.length(); i++) {
+                    char chName = text.charAt(i);
+                    if (chName >= 0xAC00) {
+                        int uniVal = chName - 0xAC00;
+                        int cho = ((uniVal - (uniVal % 28)) / 28) / 21;
+                        result += chs[cho];
+                    }
                 }
+                return result;
             }
-            return result;
         }
+        return "";
 
-        return null;
     }
     public static String dateTypeChange(String date,boolean is_diff_day){
         String []now_arr = new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()).split("/");
@@ -330,5 +335,11 @@ interface EventConnect {
     void onConnect();
 }
 interface EventMessage {
+    void messageArrive();
+}
+interface EventBoolean {
+    void messageArrive();
+}
+interface EventUserInfo{
     void messageArrive();
 }

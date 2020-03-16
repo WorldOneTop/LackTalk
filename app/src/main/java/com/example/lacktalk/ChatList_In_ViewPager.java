@@ -22,6 +22,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import java.util.List;
+
 public class ChatList_In_ViewPager extends Fragment implements View.OnClickListener {
     private View rootView;
     private Context context;
@@ -80,10 +82,24 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);//키보드 이벤트 발생용
 
         if (isUserList) {
-            addItem("나", "들어갈", "자리");
-            addItem(myPicture, myName, myMsg);//나자신도 추가해야함
-            addItem("구분선", "친구들", "몇명들어갈자리");
+            adapterList.addItem("나", "", "들어갈자리",-1,"");
+            adapterList.addItem(myPicture, myName, myMsg,-1,"");//나자신도 추가해야함
+            adapterList.addItem("구분선", "", "친구들몇명들어갈자리",-1,"");
+
+            new Thread(){
+                @Override
+                public void run() {
+                    List<db_User> list = AppDatabase.getInstance(context).myDao().getUserAll();
+                    for(db_User user : list){
+                        adapterList.addItem(user.picture,user.name,user.msg,user.user_num,user.id);
+                    }
+                    adapterList.notifyDataSetChanged();
+
+                }
+            }.start();
+
             actionbar_main.setText("친구들");
+
         } else {
             actionbar_add.setImageResource(R.drawable.icon_addchat);
             actionbar_main.setText("채팅방들");
@@ -101,16 +117,16 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
 
         searchEdit.addTextChangedListener(new TextWatcher() {//필터링 하기위해
             @Override
-            public void afterTextChanged(Editable edit) {
-                adapterList.getFilter().filter(edit.toString());
-            }
-
+            public void afterTextChanged(Editable edit) {}
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                adapterList.getFilter().filter(searchEdit.getText().toString());
+                if (s.length() != 0 && s.charAt(start + count - 1) == '\n') {//엔터키 판정
+                    searchEdit.setText(searchEdit.getText().toString().replace("\n", ""));
+                    imm.hideSoftInputFromWindow(searchEdit.getWindowToken(), 0);
+                }
             }
         });
 
@@ -149,8 +165,8 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
 
     }
 
-    public void addItem(String a, String b, String c) {//테스트상이고 나중엔 지울것
-        adapterList.addItem(a, b, c);
+    public void addItem(String a, String b, String c,int d,String e) {//테스트상이고 나중엔 지울것
+        adapterList.addItem(a, b, c,d,e);
         adapterList.notifyDataSetChanged();
     }
 
@@ -174,9 +190,11 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                 if (isUserList) {
                     startActivity(new Intent(context, AddActivity.class));
                 } else {
-                    AddActivity.adapterUser = adapterList;
-
                     ChatList.randomAdd();
+
+//                    ChatList.AddActSet();
+//                    startActivity(new Intent(context, AddActivity.class));
+
                 }
 
                 break;
@@ -191,6 +209,9 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         context = c;
         isUserList = i;
         return this;
+    }
+    public AdapterList getAdapterList(){
+        return adapterList;
     }
 }
 

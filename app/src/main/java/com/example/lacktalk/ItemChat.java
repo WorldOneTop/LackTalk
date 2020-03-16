@@ -60,13 +60,20 @@ class ItemList {
     private String name;
     private String message;
     private String initial;
+    private int primary_num;
+    private String id;
 
-    public ItemList(String a ,String b ,String c){
+    public ItemList(String a ,String b ,String c,int pnum,String idd){
         imagePath = a;
         name = b;
         message =c;
         initial = Intro.getInitialSound(name);
+        primary_num = pnum;
+        id = idd;
     }
+    public int getPrimary_num(){ return primary_num;}
+    public String getId(){return id;}
+
     public String getInitial() {return initial;}
     public void setInitial(String initial) {this.initial = initial;}
 

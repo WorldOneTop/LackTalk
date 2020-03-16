@@ -25,18 +25,13 @@ import io.socket.emitter.Emitter;
 public class NodeJS {//싱글톤 클래스
     public static String HOST;
     private int PORT;
-//    public static int STATUS;//0은 disconnect, 1은 connect, 2는 error, 3은 연결 시도중
     private static Socket socket;
-
-//    public static boolean isRecv;
     public static boolean recvBoolean;//로그인체크,아이디중복체크,서버ip옮겨졌는지 체크
-
-//    public static boolean isRecv_msg;
     public static JSONObject recvMsg;
+    public static JSONObject recvUserInfo;
 
-    private NodeJS(){
-        PORT = 12345;
-    }
+
+
     private static class SingletonHolder {
         public static final NodeJS INSTANCE = new NodeJS();
     }
@@ -44,6 +39,9 @@ public class NodeJS {//싱글톤 클래스
         return SingletonHolder.INSTANCE;
     }
 
+    private NodeJS(){
+        PORT = 12345;
+    }
     public void setHostStart(String str,Context context){
         socket.close();
         try {
@@ -80,13 +78,14 @@ public class NodeJS {//싱글톤 클래스
         socket.on(Socket.EVENT_DISCONNECT,onDisconnect);
         socket.on(Socket.EVENT_RECONNECT_ERROR,onDisconnect);
         socket.on("onBoolean",onBoolean);   //불린형 체크만을 위해서
+        socket.on("userInfo",userInfo);
 
         socket.connect();
     }
-    public void sendJson(String key, JSONObject value){
+    public static void sendJson(String key, JSONObject value){
         socket.emit(key,value);
     }
-    public static boolean getRecvBoolean(){
+    public static synchronized boolean getRecvBoolean(){
         return recvBoolean;
     }
     public static JSONObject getMsg(){
@@ -119,12 +118,21 @@ public class NodeJS {//싱글톤 클래스
             }
         }
     };
-    private Emitter.Listener onBoolean = new Emitter.Listener() {
+    private  Emitter.Listener onBoolean = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             recvBoolean = (boolean)args[0];
-            if(Intro.eventMessage != null)
-                Intro.eventMessage.messageArrive();
+            if(Intro.eventBoolean != null)
+                Intro.eventBoolean.messageArrive();
         }
     };
+    private  Emitter.Listener userInfo = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            recvUserInfo = (JSONObject)args[0];
+            if(Intro.eventUserInfo != null)
+                Intro.eventUserInfo.messageArrive();
+        }
+    };
+
 }

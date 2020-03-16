@@ -180,8 +180,8 @@ public class Login extends AppCompatActivity {
             public void messageArrive() {
                 if (NodeJS.getRecvBoolean()) {//결과가 참이라면
                     Intent intent = new Intent(Login.this, ChatList.class);
-                    intent.putExtra("id", id);
-                    intent.putExtra("pw", SHA_str);
+                    Intro.ID = id;
+                    Intro.PW = SHA_str;
                     if(isLogin){     //신규 사용자가 아니라 정보 얻기위해서
                         try {
                             rootLayout.setAlpha(1);//msg가 들어온거 확인한시점

@@ -21,7 +21,7 @@ import java.util.List;
 @Entity//테이블 만드는 부분같음
 class db_User {
     public db_User(){};
-    public db_User(int a){user_num= a;};
+    public db_User(int a){user_num= a;};//검색시 생성
     public db_User(String a,String b,String c,String d){
         id = a; name = b; picture = c; msg = d;
     }
@@ -84,6 +84,9 @@ interface MyDao {
 
     @Query("SELECT * FROM db_User")
     List<db_User> getUserAll();
+
+    @Query("SELECT * FROM db_User WHERE id =:id")
+    db_User getUserSame(String id);
 
     @Query("SELECT * FROM db_User WHERE  user_num= :userNum")
     db_User getUser(int userNum);                   //친구 정보 가져오기

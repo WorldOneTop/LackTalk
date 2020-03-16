@@ -6,12 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".AddActivity"
     android:padding="12dp">
+    <include
+        android:id="@+id/add_actionbar"
+        layout="@layout/actionbar_all"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <HorizontalScrollView
+        android:layout_below="@id/add_actionbar"
         android:id="@+id/add_scrollview"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:visibility="gone"
-        >
+        android:visibility="gone">
         <LinearLayout
             android:id="@+id/add_linearLayout"
             android:layout_width="wrap_content"
@@ -24,13 +30,79 @@
         android:id="@+id/add_editText"
         android:layout_below="@+id/add_scrollview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp" />
+    <ImageView
+        android:id="@+id/add_search"
+        android:layout_alignEnd="@id/add_editText"
+        android:layout_alignTop="@id/add_editText"
+        android:layout_alignBottom="@id/add_editText"
+        android:adjustViewBounds="true"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:paddingBottom="14dp"
+        android:src="@drawable/icon_search"/>
+<RelativeLayout
+    android:id="@+id/add_profileLayout"
+    android:layout_below="@id/add_editText"
+    android:layout_width="match_parent"
+    android:layout_marginTop="10dp"
+    android:layout_height="55dp"
+    android:visibility="gone">
+    <ImageView
+        android:id="@+id/add_profile"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:adjustViewBounds="true"
+        android:layout_margin="5dp"
+        android:layout_alignParentStart="true"/>
+    <TextView
+        android:id="@+id/add_nickname"
+        android:layout_width="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textSize="15sp"
+        android:gravity="start"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_toEndOf="@id/add_profile"
+        android:layout_toStartOf="@id/add_profile_massage" />
 
+    <TextView
+        android:id="@+id/add_profile_massage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerInParent="true"
+        android:background="@drawable/leftchat"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingLeft="17dp"
+        android:paddingRight="17dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:maxEms="14"
+        android:textSize="13sp"
+        android:visibility="gone"/>
+</RelativeLayout>
 <ListView
     android:id="@+id/add_listview"
     android:layout_below="@id/add_editText"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textFilterEnabled="true"></ListView>
+    android:textFilterEnabled="true"
+    android:visibility="gone"></ListView>
+    <TextView
+        android:id="@+id/add_noSearch"
+        android:text="사용자를 찾을 수 없습니다"
+        android:gravity="center"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </RelativeLayout>

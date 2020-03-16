@@ -13,6 +13,9 @@ var sql = mysql.createConnection({
 
 sql.connect();
 
+sql.query("SELECT id,picture,msg FROM user; ",function(error,results,fields){
+		console.log(results);
+	});
 
 io.on('connection', function(socket){	//연결 되면 이벤트 설정
 	console.log('a user connected');
@@ -31,14 +34,17 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 			io.emit('onBoolean',val_bool);
 		})
 	});
-
-	
-
-
 	socket.on('msg', function(msg){
-		console.log('message: ' + msg.asd);
 		io.emit('msg', msg);
 	});
+	socket.on('userInfo',function(msg){
+		sql.query("SELECT id,name,picture,msg FROM user WHERE id='"+msg.id+"'; ",function(error,results,fields){
+			io.emit('userInfo',results[0]);
+			
+		});
+	});
+
+
 });
 login_callback = function(id,pw, callback){
 	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"' and user.pw = '"+pw+"';", function (error, results, fields) { 
@@ -65,6 +71,11 @@ signup_callback = function(id,pw,callback){
 				callback(false);
 			}
 		}
+	});
+}
+userInfo_callback = function(id){
+	sql.query("SELECT id,picture,msg FROM user WHERE id='"+id+"'; ",function(error,results,fields){
+		io.emit('userInfo',results[0]);
 	});
 }
 // function signup(id,pw){
