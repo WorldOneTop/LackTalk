@@ -36,8 +36,8 @@ class db_User {
 class  db_Room{
     public db_Room(){}
     public db_Room(int a){room_num = a;}
-    public db_Room(int a,String b,String c,String d){
-        room_num_server = a; room_user = b;room_name = c;room_picture = d;
+    public db_Room(String b,String c,String d){
+         room_user = b;room_name = c;room_picture = d;
     }
     @PrimaryKey(autoGenerate = true)
     public int room_num;    //내부디비에서만 쓰는 방번호
@@ -45,6 +45,7 @@ class  db_Room{
     public String room_user;    //방에 참가한 유저
     public String room_name;    //방의 이름
     public String room_picture; //방의 사진
+    public String room_innerpicture; //방 내부 사진
 }
 @Entity
 class  db_Recode {

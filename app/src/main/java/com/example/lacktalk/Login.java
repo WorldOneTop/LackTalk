@@ -72,12 +72,13 @@ public class Login extends AppCompatActivity {
             }
 
             @Override
-            public void onConnect() {
+            public void onConnect() {//인트로에선 연결이였다가 로그인에서 끊어졌다가 다시연결됨
+                handler.removeCallbacksAndMessages(null);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         if(sendInfo != null)
-                            NodeJS.getInstance().sendJson(isLogin ? "login":"signup", sendInfo);
+                            NodeJS.sendJson(isLogin ? "login":"signup", sendInfo);
                         handler.postDelayed(this,300);
                     }
                 });
@@ -168,14 +169,22 @@ public class Login extends AppCompatActivity {
     }
 
     public void wait_server_forResult(final String id, final String pw, final boolean isLogin) throws Exception {
-        sendInfo = new JSONObject();
         final String SHA_str = Intro.stringToSHA_256(pw);
+        sendInfo = new JSONObject();
         sendInfo.put("id", id);
         sendInfo.put("pw", SHA_str);
+        handler.removeCallbacksAndMessages(null);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if(sendInfo != null)
+                    NodeJS.sendJson(isLogin ? "login":"signup", sendInfo);
+                handler.postDelayed(this,300);
+            }
+        });//서버에 보내기
         this.isLogin = isLogin;
-
         rootLayout.setAlpha(0.7f);
-        Intro.eventMessage = new EventMessage() {
+        Intro.eventBoolean = new EventBoolean() {
             @Override
             public void messageArrive() {
                 if (NodeJS.getRecvBoolean()) {//결과가 참이라면
@@ -192,38 +201,39 @@ public class Login extends AppCompatActivity {
                             fileWriter.close();
                             intent.putExtra("name",json_login.getString("name"));     intent.putExtra("picture",json_login.getString("picture"));
                             intent.putExtra("msg",json_login.getString("msg"));
-                            startActivity(intent);
-                            finish();
+
                             handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
                             Intro.eventConnect = null;
                             Intro.eventMessage = null;
-                            return;
+                            startActivity(intent);
+                            finish();
 
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                    }else{//신규사용자인 부분 , 값 자동로그인으로 저장
+                        try {
+                            rootLayout.setAlpha(1);
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("id", id);           jsonObject.put("pw", SHA_str);
+                            intent.putExtra("name","visitor");     jsonObject.put("name", "visitor");
+                            intent.putExtra("picture","");  jsonObject.put("picture", "");
+                            intent.putExtra("msg","");      jsonObject.put("msg", "");
+                            FileWriter fileWriter = new FileWriter(new File(Login.this.getFilesDir(),Intro.FILENAME_LOGIN_PATH));
+                            fileWriter.write(jsonObject.toString());
+                            fileWriter.flush();
+                            fileWriter.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(Login.this,"자동로그인 설정 실패",Toast.LENGTH_LONG).show();
+                        }
+                        Intro.eventConnect = null;
+                        Intro.eventMessage = null;
+                        startActivity(intent);
+                        finish();
+                        handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
+
                     }
-                    //신규사용자인 부분 , 값 자동로그인으로 저장
-                    try {
-                        rootLayout.setAlpha(1);
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("id", id);           jsonObject.put("pw", SHA_str);
-                        intent.putExtra("name","visitor");     jsonObject.put("name", "visitor");
-                        intent.putExtra("picture","");  jsonObject.put("picture", "");
-                        intent.putExtra("msg","");      jsonObject.put("msg", "");
-                        FileWriter fileWriter = new FileWriter(new File(Login.this.getFilesDir(),Intro.FILENAME_LOGIN_PATH));
-                        fileWriter.write(jsonObject.toString());
-                        fileWriter.flush();
-                        fileWriter.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(Login.this,"자동로그인 설정 실패",Toast.LENGTH_LONG).show();
-                    }
-                    startActivity(intent);
-                    finish();
-                    handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
-                    Intro.eventConnect = null;
-                    Intro.eventMessage = null;
                 } else {//사용자 정보가 안맞다면
                     rootLayout.setAlpha(1f);
                     handler.post(new Runnable() {

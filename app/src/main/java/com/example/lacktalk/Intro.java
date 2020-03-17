@@ -152,7 +152,7 @@ public class Intro extends AppCompatActivity {
                     public void run() {
                         Log.d("asd", "커낵트호출"+(sendInfo == null));
                         if (sendInfo != null)
-                            NodeJS.getInstance().sendJson("login", sendInfo);
+                            NodeJS.sendJson("login", sendInfo);
                         handler.postDelayed(this, 500);
                     }
                 });
@@ -204,6 +204,8 @@ public class Intro extends AppCompatActivity {
                     }
                 } else {//자동로그인이 아닐경우
                     intent = new Intent(Intro.this, Login.class);
+                    eventConnect = null;
+                    handler.removeCallbacksAndMessages(null);
                     startActivity(intent);
                     finish();
                 }
@@ -221,6 +223,9 @@ public class Intro extends AppCompatActivity {
             public void messageArrive() {//메시지받으면
                 Log.d("asd", "메시지 도착 호출"+NodeJS.getRecvBoolean());
                 rootLayout.setAlpha(1);
+                handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
+                eventBoolean = null;//메시지 사용종료
+                eventConnect = null;//커넥트 사용종료
                 if (NodeJS.getRecvBoolean()) {//그 결과가 참이라면
                     ID = id;
                     PW = pw;
@@ -232,9 +237,6 @@ public class Intro extends AppCompatActivity {
                     finish();
                     Toast.makeText(Intro.this, "등록된 로그인 정보가 다릅니다.", Toast.LENGTH_LONG).show();
                 }
-                handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
-                eventBoolean = null;//메시지 사용종료
-                eventConnect = null;//커넥트 사용종료
             }
         };
 

@@ -178,6 +178,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         listView_friend.setAdapter(adapterAdd);
         inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         hashMap = new HashMap<>();
+        findViewById(R.id.add_resultImg).setOnClickListener(this);
     }
 
     @Override
@@ -235,7 +236,6 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                                                 });
                                         }
                                     }.start();
-
                                 }
                             });
                     builder.setNegativeButton("아니오",
@@ -245,6 +245,9 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                             });
                     builder.show();
                 }
+                break;
+            case R.id.add_resultImg://대화창 만들기 버튼 눌렀을때
+
                 break;
         }
     }

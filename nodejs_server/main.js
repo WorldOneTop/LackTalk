@@ -21,15 +21,17 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
     });
 
 	socket.on('login', function(msg){//로그인 확인 이벤트
+		console.log("asdf");
 		login_callback(msg.id,msg.pw,function(val_bool){
 			io.emit('onBoolean',val_bool);
-		})
+		});
 	});
 
 	socket.on('signup',function(msg){//아이디 중복 확인 및 회원가입 이벤트
+		console.log("zxcv");
 		signup_callback(msg.id,msg.pw,function(val_bool){
 			io.emit('onBoolean',val_bool);
-		})
+		});
 	});
 	socket.on('msg', function(msg){
 		io.emit('msg', msg);
@@ -58,7 +60,7 @@ login_callback = function(id,pw, callback){
 
 		}
 	});
-}
+};
 signup_callback = function(id,pw,callback){
 	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"';", function (error, results, fields) { 
 		if (error) {
@@ -72,12 +74,12 @@ signup_callback = function(id,pw,callback){
 			}
 		}
 	});
-}
+};
 userInfo_callback = function(id){
 	sql.query("SELECT id,picture,msg FROM user WHERE id='"+id+"'; ",function(error,results,fields){
 		io.emit('userInfo',results[0]);
 	});
-}
+};
 // function signup(id,pw){
 // 	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"';", function (error, results, fields) {  //조회
 // 		if (error) {

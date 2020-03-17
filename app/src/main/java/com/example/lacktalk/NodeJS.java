@@ -85,7 +85,7 @@ public class NodeJS {//싱글톤 클래스
     public static void sendJson(String key, JSONObject value){
         socket.emit(key,value);
     }
-    public static synchronized boolean getRecvBoolean(){
+    public static boolean getRecvBoolean(){
         return recvBoolean;
     }
     public static JSONObject getMsg(){
