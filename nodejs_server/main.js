@@ -40,7 +40,7 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 		});
 	});
 	socket.on('userUpdate',function(msg){
-		sql.query("UPDATE user SET name = '"+msg.name+"',picture='"+msg.picture+"',msg='"+msg.msg+"' WHERE id='"+msg.id+"'; ",function(error,results,fields){
+		sql.query("UPDATE user SET name = ?,picture=?,msg=? WHERE id='"+msg.id+"'; ",[msg.name,msg.picture,msg.msg],function(error,results,fields){
 		});
 	});
 	socket.on('addFriend',function(msg){
@@ -54,6 +54,7 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 	});
 
 });
+
 login_callback = function(id,pw, callback){
 	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"' and user.pw = '"+pw+"';", function (error, results, fields) { 
 		if (error) {
@@ -81,7 +82,6 @@ signup_callback = function(id,pw,callback){
 		}
 	});
 };
-
 http.listen(12345, function(){
 	console.log('listening on *:12345');
 });

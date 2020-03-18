@@ -191,25 +191,27 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
 
                 @Override
                 public boolean onItemLongClick(final AdapterView<?> adapterView, final View view, final int i, long l) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());//getContext>> 현재 활성화된activity의 context반환(View클래스에있음)
-                    builder.setItems(logclickbuilderItem, new DialogInterface.OnClickListener() {    // 목록 클릭시 설정
-                        public void onClick(DialogInterface dialog, int index) {
-                            if (index == 0) {
+                    if(i!=1) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());//getContext>> 현재 활성화된activity의 context반환(View클래스에있음)
+                        builder.setItems(logclickbuilderItem, new DialogInterface.OnClickListener() {    // 목록 클릭시 설정
+                            public void onClick(DialogInterface dialog, int index) {
+                                if (index == 0) {
 
-                            } else {
-                                final int pnum = ((ItemList) adapterView.getAdapter().getItem(i)).getPrimary_num();
-                                new Thread() {
-                                    @Override
-                                    public void run() {
-                                        AppDatabase.getInstance(context).myDao().deleteUser(new db_User(pnum));
-                                    }
-                                }.start();
-                                Toast.makeText(context, ((ItemList) adapterView.getAdapter().getItem(i)).getName() + "님이 삭제되었습니다.", Toast.LENGTH_LONG).show();
-                                ((AdapterList) adapterView.getAdapter()).deleteItem_num(pnum);
+                                } else {
+                                    final int pnum = ((ItemList) adapterView.getAdapter().getItem(i)).getPrimary_num();
+                                    new Thread() {
+                                        @Override
+                                        public void run() {
+                                            AppDatabase.getInstance(context).myDao().deleteUser(new db_User(pnum));
+                                        }
+                                    }.start();
+                                    Toast.makeText(context, ((ItemList) adapterView.getAdapter().getItem(i)).getName() + "님이 삭제되었습니다.", Toast.LENGTH_LONG).show();
+                                    ((AdapterList) adapterView.getAdapter()).deleteItem_num(pnum);
+                                }
                             }
-                        }
-                    });
-                    builder.show();
+                        });
+                        builder.show();
+                    }
                     return true;
                 }
             });

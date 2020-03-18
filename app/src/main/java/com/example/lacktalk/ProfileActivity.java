@@ -30,6 +30,7 @@ public class ProfileActivity extends AppCompatActivity {
     ImageView picture;
     TextView name, message;
     Intent intent;
+    boolean isMe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,13 +57,14 @@ public class ProfileActivity extends AppCompatActivity {
 
         name.setText(intent.getStringExtra("name"));
         message.setText(intent.getStringExtra("message"));
+        isMe =  intent.getBooleanExtra("isMe", false);
 //        intent.putExtra("name",name);
 //        intent.putExtra("message",message);
 //        intent.putExtra("picture",picture);
 
 
-        if (intent.getBooleanExtra("isMe", false))
-            initOne();
+        if (isMe)
+            initMe();
 
         //클릭리스너 구현부
         photoView.setOnClickListener(new View.OnClickListener() {
@@ -76,12 +78,13 @@ public class ProfileActivity extends AppCompatActivity {
         name.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                updateProfile(0, intent.getBooleanExtra("isMe", false));
+                updateProfile(0);
             }
         });
+
     }
 
-    public void initOne() {//나를 누르면 편집모드로
+    public void initMe() {//나를 누르면 편집모드로
         Button editButton = new Button(this);
         editButton.setText("편집");
         final CharSequence[] items = {"이름", "상태 메시지", "배경 이미지"};
@@ -92,7 +95,7 @@ public class ProfileActivity extends AppCompatActivity {
                 builder.setTitle("무엇을 편집하시겠습니까?")
                         .setItems(items, new DialogInterface.OnClickListener() {    // 목록 클릭시 설정
                             public void onClick(DialogInterface dialog, int index) {
-                                updateProfile(index,true);
+                                updateProfile(index);
                             }
                         })
                         .show();
@@ -102,16 +105,18 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     //0은 이름, 1은 상메 2는 배사
-    public void updateProfile(final int caseNum, final boolean isme) {
+    public void updateProfile(final int caseNum) {
+        if(caseNum==2)
+            Toast.makeText(ProfileActivity.this, "추후에 함", Toast.LENGTH_LONG).show();
+
         final EditText editText = new EditText(ProfileActivity.this);
         editText.setHint(name.getText());
-        AlertDialog.Builder builder = new AlertDialog.Builder(ProfileActivity.this);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(ProfileActivity.this);
         if (caseNum == 0)
             builder.setTitle("이름을 바꾸시겠습니까?");
         else if (caseNum == 1)
             builder.setTitle("상태 메시지를 바꾸시겠습니까?");
-        else if (caseNum == 2)
-            builder.setTitle("배경 이미지를 바꾸시겠습니까?");
+
         builder.setCancelable(false)
                 .setView(editText)
                 .setPositiveButton("예",
@@ -119,23 +124,20 @@ public class ProfileActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 if (!editText.getText().toString().isEmpty()) {
                                     try {
-                                        if(isme){
+                                        if(isMe){
                                             FileReader fileReader = new FileReader(new File(ProfileActivity.this.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
                                             char[] buf = new char[2048];
                                             fileReader.read(buf);
                                             JSONObject jsonObject = new JSONObject(new String(buf));
                                             fileReader.close();
-
                                             if(caseNum==0) {
                                                 jsonObject.remove("name");
                                                 jsonObject.put("name", editText.getText());
                                                 name.setText(editText.getText());
-                                            }else if(caseNum==1){
+                                            }else if(caseNum==1) {
                                                 jsonObject.remove("msg");
                                                 jsonObject.put("msg", editText.getText());
                                                 message.setText(editText.getText());
-                                            }else if(caseNum==2){
-                                                Toast.makeText(ProfileActivity.this, "추후에 함", Toast.LENGTH_LONG).show();
                                             }
                                             FileWriter fileWriter = new FileWriter(new File(ProfileActivity.this.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
                                             fileWriter.write(jsonObject.toString());
