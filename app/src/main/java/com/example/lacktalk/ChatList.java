@@ -18,19 +18,23 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 
-public class ChatList extends AppCompatActivity implements View.OnClickListener{
+public class ChatList extends AppCompatActivity implements View.OnClickListener {
     private Intent intent;
     private Handler handler;
     private ListView listView;
-    private ImageView underbar_friend,underbar_list,underbar_setting;
+    private ImageView underbar_friend, underbar_list, underbar_setting;
     private RelativeLayout relativeLayout;
     private static final int NUM_PAGE = 3;//3페이지만 구성해놓음
     private ViewPager pager;
     PagerAdapter pagerAdapter;
-    private View upperLine1,upperLine2,upperLine3;
+    private View upperLine1, upperLine2, upperLine3;
     public static ChatList_In_ViewPager[] viewPager_chatList;
-    private String myName,myPicture,myMsg;
-ChatList(){}
+    private String myName, myPicture, myMsg;
+    private long backKeyPressedTime;
+
+    ChatList() {
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,12 +45,16 @@ ChatList(){}
 
     //어댑터 안에서 각각의 아이템을 데이터로서 관리한다
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
-        public ScreenSlidePagerAdapter(FragmentManager fm) { super(fm); }
+        public ScreenSlidePagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
         @Override
         public Fragment getItem(int position) {//생성자가 안되다 되다하는 현상 발견으로 인해 만든 안전장치 safeVar
-            if(position==2) return new Option(ChatList.this);
-            return viewPager_chatList[position] = new ChatList_In_ViewPager(getApplicationContext(), position == 0 ? true : false).safeVar(getApplicationContext(), position == 0 ? true : false);
+            if (position == 2) return new Option(ChatList.this);
+            return viewPager_chatList[position] = new ChatList_In_ViewPager(ChatList.this, position == 0 ? true : false).safeVar(getApplicationContext(), position == 0 ? true : false);
         }
+
         @Override
         public int getCount() {
             return NUM_PAGE;
@@ -54,10 +62,10 @@ ChatList(){}
     }
 
 
-    public void init(){
+    public void init() {
         //밖의 레이아웃 및 변수 선언
         intent = getIntent();
-        myName= intent.getStringExtra("name");
+        myName = intent.getStringExtra("name");
         myPicture = intent.getStringExtra("picture");
         myMsg = intent.getStringExtra("msg");
 
@@ -89,7 +97,8 @@ ChatList(){}
         init_ClickListener();
 
     }
-    public void init_ClickListener(){
+
+    public void init_ClickListener() {
         //언더바 리스너
         underbar_friend.setOnClickListener(this);
         underbar_list.setOnClickListener(this);
@@ -98,7 +107,9 @@ ChatList(){}
         //페이지이벤트
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
             @Override
             public void onPageSelected(int position) {
                 switch (position) {
@@ -106,7 +117,7 @@ ChatList(){}
                         upperLine1.setVisibility(View.VISIBLE);
                         upperLine2.setVisibility(View.INVISIBLE);
                         upperLine3.setVisibility(View.INVISIBLE);
-                    break;
+                        break;
                     case 1:
                         upperLine1.setVisibility(View.INVISIBLE);
                         upperLine2.setVisibility(View.VISIBLE);
@@ -120,14 +131,17 @@ ChatList(){}
                         break;
                 }
             }
+
             @Override
-            public void onPageScrollStateChanged(int state) {}
+            public void onPageScrollStateChanged(int state) {
+            }
         });
 
     }
+
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.icon_friend:
                 pager.setCurrentItem(0);//페이지 넘기는 역할인가봄
                 break;
@@ -137,6 +151,46 @@ ChatList(){}
             case R.id.icon_setting_underbar:
                 pager.setCurrentItem(2);
                 break;
+        }
+    }
+
+    public interface onKeyBackPressedListener {
+        public void onBack();
+    }
+
+    private onKeyBackPressedListener mOnKeyBackPressedListener;
+
+    public void setOnKeyBackPressedListener(onKeyBackPressedListener listener) {
+        mOnKeyBackPressedListener = listener;
+    } // In MyActivity
+
+    @Override
+    public void onBackPressed() {
+        if (pager != null) {
+            if (pager.getCurrentItem() == 2) {
+                if (System.currentTimeMillis() > backKeyPressedTime + 2000) {
+                    backKeyPressedTime = System.currentTimeMillis();
+                    Toast.makeText(this, "\'뒤로\' 버튼을 한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (System.currentTimeMillis() <= backKeyPressedTime + 2000) {
+                    super.onBackPressed();
+                }
+            } else {
+                if (viewPager_chatList[pager.getCurrentItem()].onBackKeyPressM.press()) {
+                    if (System.currentTimeMillis() > backKeyPressedTime + 2000) {
+                        backKeyPressedTime = System.currentTimeMillis();
+                        Toast.makeText(this, "\'뒤로\' 버튼을 한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (System.currentTimeMillis() <= backKeyPressedTime + 2000) {
+                        super.onBackPressed();
+                    }
+                }
+            }
+
+        } else {
+            super.onBackPressed();
         }
     }
 }

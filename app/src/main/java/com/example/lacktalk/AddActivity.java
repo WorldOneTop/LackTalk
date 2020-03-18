@@ -43,6 +43,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class AddActivity extends AppCompatActivity implements View.OnClickListener {
     private boolean isFriend;
@@ -291,6 +292,12 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 }
                 break;
             case R.id.add_resultImg://대화창 만들기 버튼 눌렀을때
+                    Iterator iterator = hashMap.keySet().iterator();
+                    ItemList [] itemLists = new ItemList[hashMap.size()];
+//                    while(iterator.hasNext()){
+//                        ItemList itemList
+//                    }
+
 
                 break;
         }

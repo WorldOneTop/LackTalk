@@ -1,5 +1,6 @@
 package com.example.lacktalk;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -46,11 +47,13 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
     private EditText searchEdit;
     private InputMethodManager imm;
     private Handler handler;
-
+    private Activity activity;
+    public OnBackKeyPressM onBackKeyPressM;
     ChatList_In_ViewPager() {
     }//앱 재실행 오류 이슈 떄문에 작성만
 
-    ChatList_In_ViewPager(Context c, boolean i) {
+    ChatList_In_ViewPager(ChatList c, boolean i) {
+        activity = c;
         context = c;
         isUserList = i;
     }
@@ -113,9 +116,9 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
             myMsg = jsonObject.getString("msg");
 
             if (isUserList) {
-                adapterList.addItem("나", "", "들어갈자리", -1, "");
+                adapterList.addItem("", "", "", -1, "");
                 adapterList.addItem(myPicture, myName, myMsg, -1, "");//나자신도 추가해야함
-                adapterList.addItem("구분선", "", "친구들몇명들어갈자리", -1, "");
+                adapterList.addItem("", "", "", -1, "");
 
                 new Thread() {
                     @Override
@@ -144,6 +147,20 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         actionbar_search.setOnClickListener(this);
         actionbar_add.setOnClickListener(this);
         searchImage.setOnClickListener(this);
+
+         onBackKeyPressM = new OnBackKeyPressM() {
+            @Override
+            public boolean press() {
+                if (searchLayout.getVisibility() == View.VISIBLE) {
+                    searchLayout.setVisibility(View.GONE);
+                    searchEdit.setText("");
+                    adapterList.getFilter().filter("");
+                    imm.hideSoftInputFromWindow(searchEdit.getWindowToken(), 0);
+                    return false;
+                } else
+                    return true;
+            }
+        };
 
 
         searchEdit.addTextChangedListener(new TextWatcher() {//필터링 하기위해

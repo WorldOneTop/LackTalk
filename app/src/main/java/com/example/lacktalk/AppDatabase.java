@@ -38,6 +38,7 @@ class  db_Room{
     public db_Room(int a){room_num = a;}
     public db_Room(String b){
          room_user = b;
+         room_alarm = 1;
     }
     @PrimaryKey(autoGenerate = true)
     public int room_num;    //내부디비에서만 쓰는 방번호

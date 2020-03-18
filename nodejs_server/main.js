@@ -8,7 +8,8 @@ var sql = mysql.createConnection({
 	post: 12345,
 	user: 'nodejs',
 	password: 'nodejs',
-	database: 'nodejs'
+	database: 'nodejs',
+    charset : 'utf8mb4'
 });
 
 sql.connect();
@@ -40,11 +41,13 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 		});
 	});
 	socket.on('userUpdate',function(msg){
-		sql.query("UPDATE user SET name = ?,picture=?,msg=? WHERE id='"+msg.id+"'; ",[msg.name,msg.picture,msg.msg],function(error,results,fields){
+		sql.query("UPDATE user SET name = '"+msg.name+"',picture=?,msg=? WHERE id='"+msg.id+"'; ",[msg.picture,msg.msg],function(error,results,fields){
+			if(error)console.log("userUpdate 에러");
+			console.log("name : "+msg.name);
 		});
 	});
 	socket.on('addFriend',function(msg){
-		sql.query("INSERT INTO user_friend(id_me,id_friend) VALUES('"+ msg.me +"','"+ msg.friend +"');",function(error,results,fields){
+		sql.query("INSERT INTO user_friend(id_me,id_friend) VALUES('"+ msg.me +"','"+ msg.friend +"','"+msg.name+"');",function(error,results,fields){
 		});
 	});
 	socket.on('getFriend',function(msg){
@@ -54,7 +57,6 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 	});
 
 });
-
 login_callback = function(id,pw, callback){
 	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"' and user.pw = '"+pw+"';", function (error, results, fields) { 
 		if (error) {
@@ -96,7 +98,7 @@ http.listen(12345, function(){
 // 	user_num int AUTO_INCREMENT PRIMARY KEY,
 // 	id varchar(30) NOT NULL,
 // 	pw char(64) NOT NULL,
-// 	name varchar(40) DEFAULT 'visitor',
+// 	name varchar(20) DEFAULT 'visitor',
 // 	picture varchar(40) DEFAULT '',
 // 	msg varchar (40) DEFAULT ''
 // );
@@ -121,7 +123,8 @@ http.listen(12345, function(){
 // CREATE TABLE user_friend(
 // 	friend_num INT AUTO_INCREMENT PRIMARY KEY,
 // 	id_me varchar(30) NOT NULL,
-// 	id_friend varchar(30) NOT NULL
+// 	id_friend varchar(30) NOT NULL,
+// 	name_friend varchar(20) NOT NULL
 // );
 
 //type : 1-문자 , 2-이미지 , 3-파일  ,amount-읽지않은사람의양

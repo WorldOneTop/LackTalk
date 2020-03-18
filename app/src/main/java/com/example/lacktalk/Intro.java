@@ -315,6 +315,8 @@ public class Intro extends AppCompatActivity {
                     if (chName >= 0xAC00) {
                         int uniVal = chName - 0xAC00;
                         int cho = ((uniVal - (uniVal % 28)) / 28) / 21;
+                        if(cho>=chs.length)
+                            continue;
                         result += chs[cho];
                     }
                 }
@@ -360,4 +362,7 @@ interface EventUserInfo{
 }
 interface EventGetFriend{
     void messageArrive();
+}
+interface OnBackKeyPressM{
+    boolean press();
 }

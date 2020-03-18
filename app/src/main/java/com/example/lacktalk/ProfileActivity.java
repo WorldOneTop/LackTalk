@@ -57,7 +57,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         name.setText(intent.getStringExtra("name"));
         message.setText(intent.getStringExtra("message"));
-        isMe =  intent.getBooleanExtra("isMe", false);
+        isMe = intent.getBooleanExtra("isMe", false);
 //        intent.putExtra("name",name);
 //        intent.putExtra("message",message);
 //        intent.putExtra("picture",picture);
@@ -106,7 +106,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     //0은 이름, 1은 상메 2는 배사
     public void updateProfile(final int caseNum) {
-        if(caseNum==2)
+        if (caseNum == 2)
             Toast.makeText(ProfileActivity.this, "추후에 함", Toast.LENGTH_LONG).show();
 
         final EditText editText = new EditText(ProfileActivity.this);
@@ -116,60 +116,79 @@ public class ProfileActivity extends AppCompatActivity {
             builder.setTitle("이름을 바꾸시겠습니까?");
         else if (caseNum == 1)
             builder.setTitle("상태 메시지를 바꾸시겠습니까?");
-
         builder.setCancelable(false)
-                .setView(editText)
                 .setPositiveButton("예",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                if (!editText.getText().toString().isEmpty()) {
-                                    try {
-                                        if(isMe){
-                                            FileReader fileReader = new FileReader(new File(ProfileActivity.this.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
-                                            char[] buf = new char[2048];
-                                            fileReader.read(buf);
-                                            JSONObject jsonObject = new JSONObject(new String(buf));
-                                            fileReader.close();
-                                            if(caseNum==0) {
-                                                jsonObject.remove("name");
-                                                jsonObject.put("name", editText.getText());
-                                                name.setText(editText.getText());
-                                            }else if(caseNum==1) {
-                                                jsonObject.remove("msg");
-                                                jsonObject.put("msg", editText.getText());
-                                                message.setText(editText.getText());
-                                            }
-                                            FileWriter fileWriter = new FileWriter(new File(ProfileActivity.this.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
-                                            fileWriter.write(jsonObject.toString());
-                                            fileWriter.flush();
-                                            fileWriter.close();
-                                            NodeJS.sendJson("userUpdate",jsonObject);
-                                            ChatList.viewPager_chatList[0].initFriendList();
-                                        }else{
-                                            name.setText(editText.getText());
-                                            new Thread(){
-                                                @Override
-                                                public void run() {
-                                                    AppDatabase.getInstance(ProfileActivity.this).myDao().updateFriendName(intent.getIntExtra("num",0),editText.getText().toString());
-                                                    runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            ChatList.viewPager_chatList[0].initFriendList();}});
-                                                }}.start();
-                                        }
-                                        Toast.makeText(ProfileActivity.this, "설정되었습니다", Toast.LENGTH_LONG).show();
-                                    } catch (Exception e) {
-                                        Log.d("asd","에러 : "+e);
-                                    }
-                                }
+//                                이미지 설정용 아니면 오버라이드 해서 없어질 내용
                             }
                         })
                 .setNegativeButton("아니오",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                             }
-                        })
-                .show();
+                        });
+        if (caseNum != 2) {//이름이나 상매바꾸는건 글자 수 제한때문에 따로 만듦
+            builder.setView(editText);
+            final AlertDialog dialog = builder.create();
+            dialog.show();
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!editText.getText().toString().isEmpty()) {
+                        if (editText.getText().toString().length() > 20) {
+                            Toast.makeText(ProfileActivity.this, "20글자 이내로 작성해주세요.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        try {
+                            if (isMe) {
+                                FileReader fileReader = new FileReader(new File(ProfileActivity.this.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
+                                char[] buf = new char[2048];
+                                fileReader.read(buf);
+                                JSONObject jsonObject = new JSONObject(new String(buf));
+                                fileReader.close();
+                                if (caseNum == 0) {
+                                    jsonObject.remove("name");
+                                    jsonObject.put("name", editText.getText());
+                                    name.setText(editText.getText());
+                                } else if (caseNum == 1) {
+                                    jsonObject.remove("msg");
+                                    jsonObject.put("msg", editText.getText());
+                                    message.setText(editText.getText());
+                                }
+                                FileWriter fileWriter = new FileWriter(new File(ProfileActivity.this.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
+                                fileWriter.write(jsonObject.toString());
+                                fileWriter.flush();
+                                fileWriter.close();
+                                NodeJS.sendJson("userUpdate", jsonObject);
+                                ChatList.viewPager_chatList[0].initFriendList();
+                            } else {
+                                name.setText(editText.getText());
+                                new Thread() {
+                                    @Override
+                                    public void run() {
+                                        AppDatabase.getInstance(ProfileActivity.this).myDao().updateFriendName(intent.getIntExtra("num", 0), editText.getText().toString());
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                ChatList.viewPager_chatList[0].initFriendList();
+                                            }
+                                        });
+                                    }
+                                }.start();
+                            }
+                            Toast.makeText(ProfileActivity.this, "설정되었습니다", Toast.LENGTH_LONG).show();
+                            dialog.dismiss();
+                        } catch (Exception e) {
+                            Log.d("asd", "에러 : " + e);
+                        }
+                    }
+                }
+            });
+        } else//그게아니면 위에 정의한 대로 이미지 설정함
+            builder.show();
+
+
     }
 
 

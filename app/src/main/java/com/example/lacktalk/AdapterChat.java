@@ -229,6 +229,10 @@ class AdapterList extends BaseAdapter implements Filterable {
         } else {
             viewHolder.message.setBackground(null);
         }
+        if(viewHolder.message.getText().toString().isEmpty())
+            viewHolder.message.setVisibility(View.GONE);
+        else
+            viewHolder.message.setVisibility(View.VISIBLE);
 
         return convertView;
     }
@@ -282,6 +286,8 @@ class AdapterList extends BaseAdapter implements Filterable {
                 viewHolder.name.setVisibility(View.VISIBLE);
                 if (!listViewItemList.get(1).getMessage().isEmpty())
                     viewHolder.message.setVisibility(View.VISIBLE);//자신의 말이 비어잇지가 않을때만 보이게
+                else
+                    viewHolder.message.setVisibility(View.GONE);
             } else {
                 viewHolder.relativeLayout.setVisibility(View.VISIBLE);
                 ((TextView) (viewHolder.relativeLayout.findViewById(R.id.sumFriend))).setText(getCount() - 3 + "명");

@@ -28,12 +28,13 @@
     <ImageView
         android:id="@+id/add_resultImg"
         android:background="#fff"
-        android:layout_alignEnd="@id/add_actionbar"
+        android:layout_alignParentEnd="true"
         android:layout_alignTop="@id/add_actionbar"
         android:layout_alignBottom="@id/add_actionbar"
         android:src="@drawable/icon_addchat"
-        android:layout_width="42dp"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:padding="3dp"
+        android:layout_height="55dp"
         android:adjustViewBounds="true"
         android:visibility="gone"/>
 
