@@ -21,14 +21,12 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
     });
 
 	socket.on('login', function(msg){//로그인 확인 이벤트
-		console.log("asdf");
 		login_callback(msg.id,msg.pw,function(val_bool){
 			io.emit('onBoolean',val_bool);
 		});
 	});
 
 	socket.on('signup',function(msg){//아이디 중복 확인 및 회원가입 이벤트
-		console.log("zxcv");
 		signup_callback(msg.id,msg.pw,function(val_bool){
 			io.emit('onBoolean',val_bool);
 		});
@@ -44,7 +42,15 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 	socket.on('userUpdate',function(msg){
 		sql.query("UPDATE user SET name = '"+msg.name+"',picture='"+msg.picture+"',msg='"+msg.msg+"' WHERE id='"+msg.id+"'; ",function(error,results,fields){
 		});
-
+	});
+	socket.on('addFriend',function(msg){
+		sql.query("INSERT INTO user_friend(id_me,id_friend) VALUES('"+ msg.me +"','"+ msg.friend +"');",function(error,results,fields){
+		});
+	});
+	socket.on('getFriend',function(msg){
+		sql.query("SELECT user.id,user.name,user.picture,user.msg FROM user, user_friend WHERE user.id = user_friend.id_friend AND user_friend.id_me = '"+msg.id+"';",function(error,results,fields){
+			io.emit('getFriend',results);
+		});
 	});
 
 });
@@ -75,34 +81,6 @@ signup_callback = function(id,pw,callback){
 		}
 	});
 };
-userInfo_callback = function(id){
-	sql.query("SELECT id,picture,msg FROM user WHERE id='"+id+"'; ",function(error,results,fields){
-		io.emit('userInfo',results[0]);
-	});
-};
-// function signup(id,pw){
-// 	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"';", function (error, results, fields) {  //조회
-// 		if (error) {
-// 			console.log(error);
-// 		} else {
-//         console.log(results);  //결과 출력(간혹 커넥션이 끊어졌다는 오류가 나올때가 있다.)
-//     }
-// });
-
-// }
-
-// //result[n].column
-// SELECT * FROM user WHERE EXISTS ( SELECT * FROM user WHERE user.key = user.key )
-// connection.query("select * from test", function (error, results, fields) {  //조회
-// 	if (error) {
-// 		console.log(error);
-// 	} else {
-//         console.log(results);  //결과 출력(간혹 커넥션이 끊어졌다는 오류가 나올때가 있다.)
-//     }
-// });
-
-// insert into user values('id','password');
-
 
 http.listen(12345, function(){
 	console.log('listening on *:12345');
@@ -139,6 +117,13 @@ http.listen(12345, function(){
 // 	FOREIGN KEY (room_num) REFERENCES chatroom(room_num),
 // 	FOREIGN KEY (who) REFERENCES user(user_num)
 // );
+
+// CREATE TABLE user_friend(
+// 	friend_num INT AUTO_INCREMENT PRIMARY KEY,
+// 	id_me varchar(30) NOT NULL,
+// 	id_friend varchar(30) NOT NULL
+// );
+
 //type : 1-문자 , 2-이미지 , 3-파일  ,amount-읽지않은사람의양
 
 

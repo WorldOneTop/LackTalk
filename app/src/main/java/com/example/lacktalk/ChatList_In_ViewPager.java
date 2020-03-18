@@ -1,11 +1,13 @@
 package com.example.lacktalk;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -84,11 +87,10 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         listView.setAdapter(adapterList);
 
         imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);//키보드 이벤트 발생용
-        if(isUserList) {
+        if (isUserList) {
             actionbar_main.setText("친구들");
-            initList();
-        }
-        else {
+            initFriendList();
+        } else {
             actionbar_add.setImageResource(R.drawable.icon_addchat);
             actionbar_main.setText("채팅방들");
         }
@@ -96,7 +98,8 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
 
         init_OnClick();
     }
-    public void initList(){
+
+    public void initFriendList() {
         try {
             adapterList.clearData();
             FileReader fileReader = new FileReader(new File(context.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
@@ -132,7 +135,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                 }.start();
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -145,9 +148,13 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
 
         searchEdit.addTextChangedListener(new TextWatcher() {//필터링 하기위해
             @Override
-            public void afterTextChanged(Editable edit) {}
+            public void afterTextChanged(Editable edit) {
+            }
+
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 adapterList.getFilter().filter(searchEdit.getText().toString());
@@ -159,19 +166,19 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         });
 
 
-        if (isUserList) {
+        if (isUserList) {//유저 채팅방이라면
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                                 @Override
                                                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                                                     Intent intent = new Intent(context, ProfileActivity.class);
                                                     ItemList item = (ItemList) adapterView.getAdapter().getItem(i);
-                                                    intent.putExtra("name",item.getName());
-                                                    intent.putExtra("message",item.getMessage());
-                                                    intent.putExtra("picture",item.getImagePath());
+                                                    intent.putExtra("name", item.getName());
+                                                    intent.putExtra("message", item.getMessage());
+                                                    intent.putExtra("picture", item.getImagePath());
                                                     intent.putExtra("isMe", i == 1);
                                                     intent.putExtra("num", item.getPrimary_num());
-                                                    intent.putExtra("position",i);
-                                                    intent.putExtra("item",adapterList.getItem(i));
+                                                    intent.putExtra("position", i);
+                                                    intent.putExtra("item", adapterList.getItem(i));
                                                     if (i != 0 && i != 2) {
                                                         startActivity(intent);
                                                     }
@@ -179,8 +186,34 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                                                 }
                                             }
             );
+            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                final CharSequence[] logclickbuilderItem = {"1:1 대화방 추가", "친구 삭제"};
 
-        } else {//아이템클릭걸기
+                @Override
+                public boolean onItemLongClick(final AdapterView<?> adapterView, final View view, final int i, long l) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());//getContext>> 현재 활성화된activity의 context반환(View클래스에있음)
+                    builder.setItems(logclickbuilderItem, new DialogInterface.OnClickListener() {    // 목록 클릭시 설정
+                        public void onClick(DialogInterface dialog, int index) {
+                            if (index == 0) {
+
+                            } else {
+                                final int pnum = ((ItemList) adapterView.getAdapter().getItem(i)).getPrimary_num();
+                                new Thread() {
+                                    @Override
+                                    public void run() {
+                                        AppDatabase.getInstance(context).myDao().deleteUser(new db_User(pnum));
+                                    }
+                                }.start();
+                                Toast.makeText(context, ((ItemList) adapterView.getAdapter().getItem(i)).getName() + "님이 삭제되었습니다.", Toast.LENGTH_LONG).show();
+                                ((AdapterList) adapterView.getAdapter()).deleteItem_num(pnum);
+                            }
+                        }
+                    });
+                    builder.show();
+                    return true;
+                }
+            });
+        } else {//채팅방리스트라면
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -196,10 +229,6 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
 
     }
 
-    public void addItem(String a, String b, String c,int d,String e) {//테스트상이고 나중엔 지울것
-        adapterList.addItem(a, b, c,d,e);
-        adapterList.notifyDataSetChanged();
-    }
 
     @Override
     public void onClick(View view) {
@@ -218,17 +247,13 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                 break;
             case R.id.icon_add:
                 Intent intent = new Intent(context, AddActivity.class);
-                intent.putExtra("isFriend",isUserList);
+                intent.putExtra("isFriend", isUserList);
                 if (isUserList) {
                     startActivity(intent);
                 } else {
 
-                    intent.putExtra("itemList",ChatList.viewPager_chatList[0].adapterList.getListViewItemList());
+                    intent.putExtra("itemList", ChatList.viewPager_chatList[0].adapterList.getListViewItemList());
                     startActivity(intent);
-
-//                    ChatList.AddActSet();
-//                    startActivity(new Intent(context, AddActivity.class));
-
                 }
 
                 break;

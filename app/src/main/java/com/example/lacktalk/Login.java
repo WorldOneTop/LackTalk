@@ -191,7 +191,7 @@ public class Login extends AppCompatActivity {
                     Intent intent = new Intent(Login.this, ChatList.class);
                     Intro.ID = id;
                     Intro.PW = SHA_str;
-                    if(isLogin){     //신규 사용자가 아니라 정보 얻기위해서
+                    if(isLogin){     //신규 사용자가 아니라면 정보 얻기위해서
                         try {
                             rootLayout.setAlpha(1);//msg가 들어온거 확인한시점
                             JSONObject json_login = NodeJS.getMsg();
@@ -204,11 +204,35 @@ public class Login extends AppCompatActivity {
 
                             handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
                             Intro.eventConnect = null;
-                            Intro.eventMessage = null;
+                            Intro.eventBoolean = null;
+                            Intro.eventGetFriend = new EventGetFriend() {
+                                @Override
+                                public void messageArrive() {
+                                    try {
+                                        AppDatabase.getInstance(getApplicationContext()).myDao().deleteUserAll();//친구목록초기화
+                                        if(NodeJS.recvFriendList == null)
+                                            return;
+                                        for (int i = 0; i < NodeJS.recvFriendList.length(); i++) {
+                                            db_User db_user = new db_User(((JSONObject) NodeJS.recvFriendList.get(i)).getString("id"),
+                                                    ((JSONObject) NodeJS.recvFriendList.get(i)).getString("name"),
+                                                    ((JSONObject) NodeJS.recvFriendList.get(i)).getString("picture"),
+                                                    ((JSONObject) NodeJS.recvFriendList.get(i)).getString("msg")
+                                                    );
+                                            AppDatabase.getInstance(getApplicationContext()).myDao().insertUser(db_user);
+                                        }
+                                    } catch (Exception e) {Log.d("asd","로그인 접속 친구목록init 에러 : "+e);
+                                        e.printStackTrace();
+                                    }
+                                }
+                            };
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("id",id);
+                            NodeJS.sendJson("getFriend",jsonObject);
+
                             startActivity(intent);
                             finish();
 
-                        } catch (Exception e) {
+                        } catch (Exception e) {Log.d("asd","로그인 접속 에러 : "+e);
                             e.printStackTrace();
                         }
                     }else{//신규사용자인 부분 , 값 자동로그인으로 저장
@@ -228,7 +252,7 @@ public class Login extends AppCompatActivity {
                             Toast.makeText(Login.this,"자동로그인 설정 실패",Toast.LENGTH_LONG).show();
                         }
                         Intro.eventConnect = null;
-                        Intro.eventMessage = null;
+                        Intro.eventBoolean = null;
                         startActivity(intent);
                         finish();
                         handler.removeCallbacksAndMessages(null);//메시지 보내기 종료

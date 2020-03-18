@@ -28,9 +28,9 @@
     <ImageView
         android:id="@+id/add_resultImg"
         android:background="#fff"
-        android:layout_alignEnd="@id/add_scrollview"
-        android:layout_alignTop="@id/add_scrollview"
-        android:layout_alignBottom="@id/add_scrollview"
+        android:layout_alignEnd="@id/add_actionbar"
+        android:layout_alignTop="@id/add_actionbar"
+        android:layout_alignBottom="@id/add_actionbar"
         android:src="@drawable/icon_addchat"
         android:layout_width="42dp"
         android:layout_height="wrap_content"
@@ -106,7 +106,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:textFilterEnabled="true"
-    android:visibility="gone"></ListView>
+    android:visibility="gone"
+    android:choiceMode="multipleChoice"></ListView>
     <TextView
         android:id="@+id/add_noSearch"
         android:text="사용자를 찾을 수 없습니다"

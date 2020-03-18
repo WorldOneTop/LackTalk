@@ -29,7 +29,7 @@ public class NodeJS {//싱글톤 클래스
     public static boolean recvBoolean;//로그인체크,아이디중복체크,서버ip옮겨졌는지 체크
     public static JSONObject recvMsg;
     public static JSONObject recvUserInfo;
-
+    public static JSONArray recvFriendList;
 
 
     private static class SingletonHolder {
@@ -79,6 +79,7 @@ public class NodeJS {//싱글톤 클래스
         socket.on(Socket.EVENT_RECONNECT_ERROR,onDisconnect);
         socket.on("onBoolean",onBoolean);   //불린형 체크만을 위해서
         socket.on("userInfo",userInfo);
+        socket.on("getFriend",getFriend);
 
         socket.connect();
     }
@@ -132,6 +133,18 @@ public class NodeJS {//싱글톤 클래스
             recvUserInfo = (JSONObject)args[0];
             if(Intro.eventUserInfo != null)
                 Intro.eventUserInfo.messageArrive();
+        }
+    };
+    private Emitter.Listener getFriend = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            if(args[0].toString().equals("[]")){//노드에서 result[0]이 아닌 results 전체를 반환해서 이런식으로 체크
+                recvFriendList = null;
+            }else{
+                recvFriendList = (JSONArray) args[0];
+            }
+            if(Intro.eventGetFriend != null)
+                Intro.eventGetFriend.messageArrive();
         }
     };
 

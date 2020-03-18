@@ -55,6 +55,7 @@ public class Intro extends AppCompatActivity {
     public static EventMessage eventMessage = null;
     public static EventBoolean eventBoolean = null;
     public static EventUserInfo eventUserInfo = null;
+    public static EventGetFriend eventGetFriend = null;
 
 
     @Override
@@ -355,5 +356,8 @@ interface EventBoolean {
     void messageArrive();
 }
 interface EventUserInfo{
+    void messageArrive();
+}
+interface EventGetFriend{
     void messageArrive();
 }

@@ -174,11 +174,39 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         linearLayout = findViewById(R.id.add_linearLayout);
         listView_friend = findViewById(R.id.add_listview);
         listView_friend.setVisibility(View.VISIBLE);
-        adapterAdd = new AdapterAdd((ArrayList<ItemList>) intent.getSerializableExtra("itemList"),this);
+        adapterAdd = new AdapterAdd((ArrayList<ItemList>) intent.getSerializableExtra("itemList"));
         listView_friend.setAdapter(adapterAdd);
         inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         hashMap = new HashMap<>();
         findViewById(R.id.add_resultImg).setOnClickListener(this);
+        listView_friend.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                ((AdapterAdd)adapterView.getAdapter()).notifyDataSetChanged();
+                ItemList item = ((AdapterAdd)adapterView.getAdapter()).getItem(i);
+                if(!listView_friend.isItemChecked(i)) {//해당 포지션의 뷰가체크되지않았으면
+                    linearLayout.removeView(hashMap.get(item));
+                    hashMap.remove(item);
+                }
+                else{//클릭해서 그 아이템이 체크가 됐으면
+                    View inflaterView = inflater.inflate(R.layout.listview_horizontal, linearLayout, false);
+
+                    if(item.getImagePath().isEmpty())
+                        ((ImageView)inflaterView.findViewById(R.id.horizon_img)).setImageResource(R.drawable.defaultimg);
+                    ((TextView)inflaterView.findViewById(R.id.horizon_text)).setText(item.getName());
+                    hashMap.put(item,inflaterView);
+                    linearLayout.addView(inflaterView);
+                }
+                if(hashMap.size()==0) {
+                    scrollView.setVisibility(View.GONE);
+                    findViewById(R.id.add_resultImg).setVisibility(View.GONE);
+                }
+                else {
+                    scrollView.setVisibility(View.VISIBLE);
+                    findViewById(R.id.add_resultImg).setVisibility(View.VISIBLE);
+                }
+            }
+        });
     }
 
     @Override
@@ -221,16 +249,32 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                                     new Thread() {
                                         @Override
                                         public void run() {
-                                            if (AppDatabase.getInstance(AddActivity.this).myDao().getUserSame(id) == null) {
-                                                AppDatabase.getInstance(AddActivity.this).myDao().insertUser(new db_User(id, name.getText() + "", imgPath, message.getText() + ""));
-                                                onBackPressed();
-                                            } else
+                                            if(Intro.ID.equals(id))
+                                                handler.post(new Runnable() {//내아이디는 파일로 저장되어있음
+                                                    @Override
+                                                    public void run() {
+                                                            Toast.makeText(AddActivity.this, "자기 자신은 등록 할 수 없습니다.", Toast.LENGTH_LONG).show();
+                                                    }
+                                                });
+                                            else if (AppDatabase.getInstance(AddActivity.this).myDao().getUserSame(id) == null) {
+                                                try {
+                                                    AppDatabase.getInstance(AddActivity.this).myDao().insertUser(new db_User(id, name.getText() + "", imgPath, message.getText() + ""));
+                                                    JSONObject jsonObject = new JSONObject();
+                                                    jsonObject.put("me", Intro.ID);
+                                                    jsonObject.put("friend", id);
+                                                    NodeJS.sendJson("addFriend", jsonObject);
+                                                    handler.post(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            ChatList.viewPager_chatList[0].initFriendList();
+                                                            onBackPressed();
+                                                        }
+                                                    });
+                                                }catch(Exception e){ e.printStackTrace();}
+                                            }else
                                                 handler.post(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        if (Intro.ID.equals(id))
-                                                            Toast.makeText(AddActivity.this, "자기 자신은 등록 할 수 없습니다.", Toast.LENGTH_LONG).show();
-                                                        else
                                                             Toast.makeText(AddActivity.this, "이미 친구로 등록 하셨습니다.", Toast.LENGTH_LONG).show();
                                                     }
                                                 });
@@ -252,29 +296,6 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         }
     }
 
-    public void addView(ItemList item,boolean isCheck) {
-        if(!isCheck) {
-            linearLayout.removeView(hashMap.get(item));
-            hashMap.remove(item);
-        }
-        else{
-            View view = inflater.inflate(R.layout.listview_horizontal, linearLayout, false);
-            if(item.getImagePath().isEmpty())
-                ((ImageView)view.findViewById(R.id.horizon_img)).setImageResource(R.drawable.defaultimg);
-            ((TextView)view.findViewById(R.id.horizon_text)).setText(item.getName());
-            hashMap.put(item,view);
-            linearLayout.addView(view);
-        }
-        if(hashMap.size()==0) {
-            scrollView.setVisibility(View.GONE);
-            findViewById(R.id.add_resultImg).setVisibility(View.GONE);
-        }
-        else {
-            scrollView.setVisibility(View.VISIBLE);
-            findViewById(R.id.add_resultImg).setVisibility(View.VISIBLE);
-        }
-    }
-
     @Override
     public void onBackPressed() {
         Intro.eventUserInfo = null;
@@ -285,14 +306,16 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
 class AdapterAdd extends BaseAdapter implements Filterable {
     private ArrayList<ItemList> listViewItemList = new ArrayList<ItemList>();//원본이 저장되는 아이템
     private ArrayList<ItemList> filteredItemList = null;//필터해서보여질아이템리스트
+    private ArrayList<Boolean> isChecked = null;
     private MyFilter myFilter;
-    AddActivity instance;
 
-    AdapterAdd(ArrayList<ItemList> userList,AddActivity inst) {
+    AdapterAdd(ArrayList<ItemList> userList) {
         listViewItemList.addAll(userList);
         listViewItemList.remove(0);listViewItemList.remove(0);listViewItemList.remove(0);
         filteredItemList = listViewItemList;
-        instance = inst;
+        isChecked = new ArrayList<>();
+        for(int i=0;i<listViewItemList.size();i++)
+            isChecked.add(false);
     }
 
     private class ViewHolder {
@@ -314,6 +337,7 @@ class AdapterAdd extends BaseAdapter implements Filterable {
             viewHolder.picture = convertView.findViewById(R.id.add_list_imageview);
             viewHolder.name = convertView.findViewById(R.id.add_list_name);
             viewHolder.checkBox = convertView.findViewById(R.id.add_list_checkbok);
+            viewHolder.checkBox.setButtonTintList(ColorStateList.valueOf(Color.parseColor("#f7e600")));
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -323,18 +347,12 @@ class AdapterAdd extends BaseAdapter implements Filterable {
         if (listViewItem.getImagePath().isEmpty())
             viewHolder.picture.setImageResource(R.drawable.defaultimg);
         viewHolder.name.setText(listViewItem.getName());
-        viewHolder.checkBox.setButtonTintList(ColorStateList.valueOf(Color.parseColor("#f7e600")));
-        viewHolder.checkBox.setOnCheckedChangeListener(changeListener);
+//        viewHolder.checkBox.setOnCheckedChangeListener(changeListener);
         viewHolder.checkBox.setTag(listViewItem);
+        viewHolder.checkBox.setChecked(((ListView)parent).isItemChecked(position));
+
         return convertView;
     }
-
-    private CompoundButton.OnCheckedChangeListener changeListener = new CompoundButton.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-            instance.addView((ItemList) compoundButton.getTag(),b);
-        }
-    };
 
     @Override// 지정한 위치(position)에 있는 데이터와 관계된 아이템(row)의 ID를 리턴. : 필수 구현
     public long getItemId(int position) {

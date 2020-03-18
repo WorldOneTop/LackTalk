@@ -36,8 +36,8 @@ class db_User {
 class  db_Room{
     public db_Room(){}
     public db_Room(int a){room_num = a;}
-    public db_Room(String b,String c,String d){
-         room_user = b;room_name = c;room_picture = d;
+    public db_Room(String b){
+         room_user = b;
     }
     @PrimaryKey(autoGenerate = true)
     public int room_num;    //내부디비에서만 쓰는 방번호
@@ -46,6 +46,7 @@ class  db_Room{
     public String room_name;    //방의 이름
     public String room_picture; //방의 사진
     public String room_innerpicture; //방 내부 사진
+    public int room_alarm;//알람설정되어있는지 1이면 알람 0이면 알람X
 }
 @Entity
 class  db_Recode {
@@ -80,6 +81,8 @@ interface MyDao {
     void deleteUser(db_User user);
     @Delete     //채팅방 나가기
     void deleteRoom(db_Room room);
+    @Query("DELETE FROM db_User") //친구 전부 삭제(다른아이디로그인)
+    void deleteUserAll();
     @Query("DELETE FROM db_recode WHERE recode_num = :roomNum")//나간 채팅방 내역 지우기
     void deleteRoomChat(int roomNum);
 

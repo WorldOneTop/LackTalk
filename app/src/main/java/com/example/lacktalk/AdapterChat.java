@@ -259,6 +259,16 @@ class AdapterList extends BaseAdapter implements Filterable {
     public ArrayList<ItemList> getListViewItemList(){
         return listViewItemList;
     }
+    public void deleteItem_num(int p_num){
+        for(int i=0;i<listViewItemList.size();i++){
+            if(listViewItemList.get(i).getPrimary_num() == p_num) {
+                listViewItemList.remove(i);
+                notifyDataSetChanged();
+                return;
+            }
+        }
+    }
+
     public void init_UserList(ViewHolder viewHolder, int position) {
         if (0 <= position && position < 3 && !isFilter) { // 초기화 3개 부문
             viewHolder.picture.setVisibility(View.GONE);

@@ -142,7 +142,7 @@ public class ProfileActivity extends AppCompatActivity {
                                             fileWriter.flush();
                                             fileWriter.close();
                                             NodeJS.sendJson("userUpdate",jsonObject);
-                                            ChatList.viewPager_chatList[0].initList();
+                                            ChatList.viewPager_chatList[0].initFriendList();
                                         }else{
                                             name.setText(editText.getText());
                                             new Thread(){
@@ -152,7 +152,7 @@ public class ProfileActivity extends AppCompatActivity {
                                                     runOnUiThread(new Runnable() {
                                                         @Override
                                                         public void run() {
-                                                            ChatList.viewPager_chatList[0].initList();}});
+                                                            ChatList.viewPager_chatList[0].initFriendList();}});
                                                 }}.start();
                                         }
                                         Toast.makeText(ProfileActivity.this, "설정되었습니다", Toast.LENGTH_LONG).show();
