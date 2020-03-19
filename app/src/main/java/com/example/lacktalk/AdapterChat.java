@@ -2,8 +2,6 @@ package com.example.lacktalk;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -160,8 +158,8 @@ public class AdapterChat extends BaseAdapter {
     }
 
     // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
-    public void addItem(String imagePath, String name, String text, String time, boolean isme) {
-        listViewItemList.add(new ItemChat(imagePath, name, text, time, isme));
+    public void addItem(String imagePath, String name, String text, String time, boolean isme,int amount,int type) {
+        listViewItemList.add(new ItemChat(imagePath, name, text, time, isme,amount,type));
     }
 
     // 지정한 위치(position)에 있는 데이터와 관계된 아이템(row)의 ID를 리턴. : 필수 구현
@@ -263,8 +261,8 @@ class AdapterList extends BaseAdapter implements Filterable {
         listViewItemList.add(new ItemList(imagePath, name, text, pnum, idd));
     }
 
-    public void addRoom(String a, String b, String c, int d, String e, int f) {
-        listViewItemList.add(new ItemList(a, b, c, d, e).initRoom(f));
+    public void addRoom(String a, String b, String c, int d, String e, int f,int g) {
+        listViewItemList.add(new ItemList(a, b, c, d, e).initRoom(f,g));
     }
 
     public void clearData() {

@@ -20,6 +20,17 @@ import java.util.List;
 
 @Entity//테이블 만드는 부분같음
 class db_User {
+    @Override
+    public String toString() {
+        return "db_User{" +
+                "user_num=" + user_num +
+                ", id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", picture='" + picture + '\'' +
+                ", msg='" + msg + '\'' +
+                '}';
+    }
+
     public db_User(){};
     public db_User(int a){user_num= a;};//검색시 생성
     public db_User(String a,String b,String c,String d){
@@ -34,6 +45,18 @@ class db_User {
 }
 @Entity
 class  db_Room{
+    @Override
+    public String toString() {
+        return "db_Room{" +
+                "room_num=" + room_num +
+                ", room_num_server=" + room_num_server +
+                ", room_user='" + room_user + '\'' +
+                ", room_name='" + room_name + '\'' +
+                ", room_picture='" + room_picture + '\'' +
+                ", room_innerpicture='" + room_innerpicture + '\'' +
+                ", room_alarm=" + room_alarm +
+                '}';
+    }
 
     public db_Room(){}
     public db_Room(int a){room_num_server = a;}
@@ -41,7 +64,7 @@ class  db_Room{
         room_num_server = server_num;
         room_user = id;
         String result = name.replace("/", ", ");
-        if(result.length()>20) {
+        if(result.length()>35) {
             result = result.substring(0,18);
             result +="...";
         }else {
@@ -61,6 +84,20 @@ class  db_Room{
 }
 @Entity
 class  db_Recode {
+    @Override
+    public String toString() {
+        return "db_Recode{" +
+                "recode_num=" + recode_num +
+                ", recode_room=" + recode_room +
+                ", recode_amount=" + recode_amount +
+                ", recode_who='" + recode_who + '\'' +
+                ", recode_date='" + recode_date + '\'' +
+                ", recode_text='" + recode_text + '\'' +
+                ", recode_type=" + recode_type +
+                ", recode_read=" + recode_read +
+                '}';
+    }
+
     public db_Recode(){}
     public db_Recode(int a){recode_num = a;}
     public db_Recode(int a,int b,String c,String d,String e,int f,int g){
@@ -92,8 +129,14 @@ interface MyDao {
     void deleteUser(db_User user);
     @Delete     //채팅방 나가기
     void deleteRoom(db_Room room);
+
     @Query("DELETE FROM db_User") //친구 전부 삭제(다른아이디로그인)
     void deleteUserAll();
+    @Query("DELETE FROM db_Recode")//기록 삭제
+    void deleteRecodeAll();
+    @Query("DELETE FROM db_Room")//채팅방 삭제
+    void deleteRoomAll();
+
     @Query("DELETE FROM db_recode WHERE recode_num = :roomNum")//나간 채팅방 내역 지우기
     void deleteRoomChat(int roomNum);
 
@@ -115,10 +158,14 @@ interface MyDao {
     @Query("SELECT room_user FROM db_Room  WHERE room_num = :roomNum")
     String getInUser(int roomNum);                  //해당 방의 유저만 보기
 
-    @Query("SELECT ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date, SUM(re.recode_read) FROM db_Room as ro,db_Recode as re " +
-            "WHERE ro.room_num_server = re.recode_room group by ro.room_num ORDER BY re.recode_date DESC")
+    @Query("SELECT ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date, SUM(re.recode_read), ro.room_user FROM db_Room as ro,db_Recode as re " +
+            "WHERE ro.room_num_server = re.recode_room group by ro.room_num_server ORDER BY re.recode_date DESC")
     Cursor getChatLastList();                 //전체적인 채팅방뷰 갖고오기(ChatList)
 
+    @Query("SELECT u.picture,u.name,re.recode_text,re.recode_date,re.recode_amount,re.recode_type FROM db_recode as re, db_User as u WHERE re.recode_who = u.id AND re.recode_room =:roomNum ORDER BY re.recode_date DESC LIMIT 1,-1")
+    Cursor getChatInRoom(int roomNum);                 //해당 방에 필요한 채팅 정보
+    @Query("SELECT name FROM db_User WHERE id=:id")
+    String getNickname(String id);
 
     @Query("SELECT * FROM db_Room")
     List<db_Room> getRoomAll();

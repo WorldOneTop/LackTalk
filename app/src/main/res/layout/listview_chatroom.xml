@@ -81,6 +81,14 @@
         android:textSize="13sp"
         android:layout_marginLeft="3dp"
         android:layout_marginRight="3dp"/>
+    <TextView
+        android:id="@+id/item_unread"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/item_time"
+        android:layout_alignStart="@id/item_time"
+        android:textColor="#f7e600"
+        android:textSize="13sp" />
 </RelativeLayout>
     <RelativeLayout
         android:id="@+id/listview_right"
@@ -113,6 +121,14 @@
             android:layout_marginRight="3dp"
             android:layout_marginBottom="7dp"/>
 
+        <TextView
+            android:id="@+id/itemR_unread"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/item_timeR"
+            android:layout_alignEnd="@id/item_timeR"
+            android:textColor="#f7e600"
+            android:textSize="13sp" />
     </RelativeLayout>
 
 </RelativeLayout>

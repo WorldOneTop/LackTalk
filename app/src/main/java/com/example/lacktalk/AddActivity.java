@@ -263,6 +263,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                                                     jsonObject.put("me", Intro.ID);
                                                     jsonObject.put("friend", id);
                                                     jsonObject.put("name", name.getText().toString());
+                                                    jsonObject.put("myname",ChatList_In_ViewPager.myName);
                                                     NodeJS.sendJson("addFriend", jsonObject);
                                                     handler.post(new Runnable() {
                                                         @Override
@@ -312,12 +313,12 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                         public void messageArrive() {
                             new Thread() {
                                 @Override
-                                public void run() {
+                                public void run() {Log.d("asd","이게두번실행될리도없고말이지?");
+                                    Intro.eventAddChatRoom = null;
                                     db_Recode db_recode = new db_Recode(NodeJS.recvInt,0,Intro.ID,new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()),"",1,0);
                                     AppDatabase.getInstance(AddActivity.this).myDao().insertRecode(db_recode);
-                                    ChatList.viewPager_chatList[1].initChatList();
                                     AppDatabase.getInstance(AddActivity.this).myDao().insertRoom(new db_Room(NodeJS.recvInt,resultName,result));
-                                    Intro.eventAddChatRoom = null;
+                                    ChatList.viewPager_chatList[1].initChatList();
                                     finish();
                                 }
                             }.start();

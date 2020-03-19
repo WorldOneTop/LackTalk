@@ -44,7 +44,8 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
     private TextView actionbar_main;
     private AdapterList adapterList;
     private ListView listView;
-    private String myName, myPicture, myMsg;
+    public static String myName;
+    private String myPicture, myMsg;
     private RelativeLayout searchLayout;
     private EditText searchEdit;
     private InputMethodManager imm;
@@ -159,10 +160,11 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         adapterList.clearData();
         new Thread() {
             @Override
-            public void run() {// ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date, SUM(re.recode_read)
+            public void run() {// ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date, SUM(re.recode_read), ro.room_user
                 Cursor list = AppDatabase.getInstance(context).myDao().getChatLastList();
-                while (list.moveToNext()) {
-                    adapterList.addRoom(list.getString(0), list.getString(1), list.getString(2), list.getInt(3), list.getString(4), list.getInt(5));
+                while (list.moveToNext()) {//한줄 만드는거
+                    int sumMan = list.getString(6).split("/").length;
+                    adapterList.addRoom(list.getString(0), list.getString(1), list.getString(2), list.getInt(3), list.getString(4), list.getInt(5),sumMan);
                 }
                 handler.post(new Runnable() {
                     @Override
@@ -215,7 +217,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         });
 
 
-        if (isUserList) {//유저 채팅방이라면
+        if (isUserList) {//유저리스트라면
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                                 @Override
                                                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -278,7 +280,9 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Intent intent = new Intent(context, ChatRoom.class);
-                    intent.putExtra("name", adapterList.getItem(i).getName());
+                    intent.putExtra("name", adapterList.getItem(i).getName());      //방의 이름
+                    intent.putExtra("pnum", adapterList.getItem(i).getPrimary_num());//방번호(서버)
+                    intent.putExtra("amount",adapterList.getItem(i).getAmount());//총 사람 수
                     startActivity(intent);
                     adapterList.getFilter().filter("");
                     searchLayout.setVisibility(View.GONE);

@@ -6,6 +6,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,8 +28,11 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 public class ChatRoom extends Activity implements View.OnClickListener {
@@ -44,6 +48,7 @@ public class ChatRoom extends Activity implements View.OnClickListener {
     ListView listView,drawer_listview;
     RelativeLayout drawer_rootLayout,chatroom_roootLayout;
     Handler handler;
+    int roomNum,sumPeople;//방번호, 총 사람 수
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +98,8 @@ public class ChatRoom extends Activity implements View.OnClickListener {
         intent = getIntent();
         handler = new Handler();
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);//키보드 이벤트 발생용
+        roomNum = intent.getIntExtra("pnum",0);
+        sumPeople = intent.getIntExtra("amount",0);
 
 
         //디폴트 설정
@@ -102,6 +109,7 @@ public class ChatRoom extends Activity implements View.OnClickListener {
         textView_name.setText(intent.getExtras().getString("name"));//채팅방 이름 설정
         drawer_rootLayout.setOnClickListener(null);//서랍 뒤가 터치 안되게 막아놓음
         init_ClickListener();
+        init_chatting();
     }
 
     public void init_ClickListener() {
@@ -147,6 +155,35 @@ public class ChatRoom extends Activity implements View.OnClickListener {
             }
         });
     }
+    public void init_chatting(){
+        new Thread(){
+            @Override
+            public void run() {
+//                List<db_User> a = AppDatabase.getInstance(ChatRoom.this).myDao().getUserAll();
+//                List<db_Recode> b = AppDatabase.getInstance(ChatRoom.this).myDao().getChatAll(roomNum);
+//                List<db_Room> c = AppDatabase.getInstance(ChatRoom.this).myDao().getRoomAll();
+//                for(db_User aa : a)
+//                    Log.d("asd"," "+aa);
+//                Log.d("asd","###############################################################");
+//                for(db_Recode bb : b)
+//                    Log.d("asd"," "+bb);
+//                Log.d("asd","###############################################################");
+//                for(db_Room cc : c)
+//                    Log.d("asd"," "+cc);
+                                        //한사람이미지, 한사람닉네임,내용,시간   ,amount,타입
+                Cursor list = AppDatabase.getInstance(ChatRoom.this).myDao().getChatInRoom(roomNum);
+                while(list.moveToNext()){Log.d("asd","실행");
+                    adapter.addItem(list.getString(0), list.getString(1),list.getString(2), list.getString(3), Intro.ID.equals(list.getString(1)),list.getInt(4),list.getInt(5));
+                }
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        }.start();
+    }
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -180,10 +217,31 @@ public class ChatRoom extends Activity implements View.OnClickListener {
                 }
                 imageView_add.setRotation(imageView_add.getRotation() + 45);
                 break;
-            case R.id.icon_send://추후 디비때문에 바꿔야함
-
+            case R.id.icon_send://보냄 버튼 누름
                 if(editText_chat.getText().toString().length() != 0) {
-                    adapter.addItem("dfault", "Test ID", editText_chat.getText().toString(), new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()), true);
+                    final String now = new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date());
+                    //                    타입 텍스트 후 데이트, 안읽은양 방번호
+      //내가 필요한건  recode_room = a; recode_amount = b; recode_who = c; recode_date = d; recode_text = e; recode_type = f; recode_read= g;
+                    //타입 1로 고정해놓음 이미지 처리에 따라 바뀌어야함
+                    new Thread(){
+                        @Override
+                        public void run() {
+                            try {
+                                AppDatabase.getInstance(ChatRoom.this).myDao().insertRecode(new db_Recode(roomNum, sumPeople - 1, Intro.ID, now, editText_chat.getText().toString(), 1, 0));
+                                JSONObject jsonObject = new JSONObject();//room_num,amount,who,date,text,type
+                                jsonObject.put("a", roomNum);
+                                jsonObject.put("b", sumPeople-1);
+                                jsonObject.put("c", Intro.ID);
+                                jsonObject.put("d", now);
+                                jsonObject.put("e", editText_chat.getText().toString());
+                                jsonObject.put("f", 1);
+                                NodeJS.sendJson("addChatRecode", jsonObject);
+                            }catch (Exception e){e.printStackTrace(); Log.d("asd","채팅추가 에러 :"+e);}
+                        }
+                    }.start();
+                    adapter.addItem("", Intro.ID, editText_chat.getText().toString(), now, true,sumPeople-1,1);
+                    adapter.notifyDataSetChanged();
+
                     editText_chat.setText("");
                     adapter.notifyDataSetChanged();
                 }

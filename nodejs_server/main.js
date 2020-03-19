@@ -9,7 +9,7 @@ var sql = mysql.createConnection({
 	user: 'nodejs',
 	password: 'nodejs',
 	database: 'nodejs',
-    charset : 'utf8mb4'
+	charset : 'utf8mb4'
 });
 
 sql.connect();
@@ -41,13 +41,17 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 		});
 	});
 	socket.on('userUpdate',function(msg){
-		sql.query("UPDATE user SET name = ?,picture=?,msg=? WHERE id='"+msg.id+"'; ",[msg.name,msg.picture,msg.msg],function(error,results,fields){
+		sql.query("UPDATE user SET name = ?,picture=?,msg=? WHERE id='"+msg.id+"'; ",[msg.name,msg.picture,msg.msg],function(error,results,fields){if(error) console.log("tq");
+			console.log(msg.name);
 		});
 	});
 	socket.on('addFriend',function(msg){
-		sql.query("INSERT INTO user_friend(id_me,id_friend,name_friend) VALUES('"+ msg.me +"','"+ msg.friend +"','"+msg.name+"');",function(error,results,fields){
+		sql.query("INSERT INTO user_friend(id_me,id_friend,name_friend) VALUES(?,?,?);",[msg.me,msg.friend,msg.name],function(error,results,fields){
+		});//위는 그냥 친구추가 아래는 상대방도 자동으로 추가시킴
+		sql.query("INSERT INTO user_friend(id_me,id_friend,name_friend) VALUES(?,?,?);",[msg.friend,msg.me,msg.myname],function(error,results,fields){
+			io.emit('addFriend',"친추요청옴");
 		});
-	});
+ 	});
 	socket.on('getFriend',function(msg){
 		sql.query("SELECT user.id, user_friend.name_friend, user.picture, user.msg FROM user, user_friend WHERE user.id = user_friend.id_friend AND user_friend.id_me = '"+msg.id+"';",function(error,results,fields){
 			io.emit('getFriend',results);
@@ -68,9 +72,33 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 			});
 		});
 	});
+	socket.on('addChatRecode',function(msg){
+		sql.query("INSERT INTO chatrecode(room_num,amount,who,date,text,type) VALUES(?,?,?,?,?,?);",[msg.a,msg.b,msg.c,msg.d,msg.e,msg.f],function(error,results,fields){
+		});
+	});
+	socket.on('initChatRoom',function(msg){
+		sql.query("SELECT * FROM chatroom",function(error,results,fields){
+			var jsonArr = new Array();
+			for(var i in results){
+				var array = results[i].room_user.split('/');
+				for(var j in array){
+					if(array[j] == msg.id){
+						var jsonobj = new Object();
+						jsonobj.num = results[i].room_num;
+						jsonobj.user = results[i].room_user;
+						jsonArr.push(jsonobj);
+						break;
+					}
+				}
+			}console.log(jsonArr);
+			io.emit('initChatRoom',jsonArr);
+		});
+	});
 
 
 });
+
+
 login_callback = function(id,pw, callback){
 	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"' and user.pw = '"+pw+"';", function (error, results, fields) { 
 		if (error) {

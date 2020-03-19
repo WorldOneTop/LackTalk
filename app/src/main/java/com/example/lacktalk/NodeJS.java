@@ -32,6 +32,7 @@ public class NodeJS {//싱글톤 클래스
     public static JSONObject recvMsg;
     public static JSONObject recvUserInfo;
     public static JSONArray recvFriendList;
+    public static JSONArray recvChatList;
     public static int recvInt;
 
 
@@ -84,6 +85,8 @@ public class NodeJS {//싱글톤 클래스
         socket.on("userInfo",userInfo);
         socket.on("getFriend",getFriend);
         socket.on("addChatRoom",addChatRoom);
+        socket.on("initChatRoom",initChatRoom);
+        socket.on("addFriend",addFriend);
 
         socket.connect();
     }
@@ -157,6 +160,25 @@ public class NodeJS {//싱글톤 클래스
             recvInt = (int)args[0];
             if(Intro.eventAddChatRoom != null)
                 Intro.eventAddChatRoom.messageArrive();
+        }
+    };
+    private Emitter.Listener initChatRoom = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            if(args[0].toString().equals("[]")){//노드에서 result[0]이 아닌 results 전체를 반환해서 이런식으로 체크
+                recvChatList = null;
+            }else{
+                recvChatList = (JSONArray) args[0];
+            }
+            if(Intro.eventInitChatRoom != null)
+                Intro.eventInitChatRoom.messageArrive();
+        }
+    };
+    private Emitter.Listener addFriend = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            if(ChatList.viewPager_chatList[1] != null)
+                ChatList.viewPager_chatList[1].initFriendList();
         }
     };
 }

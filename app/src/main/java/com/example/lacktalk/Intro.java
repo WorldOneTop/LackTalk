@@ -30,6 +30,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class Intro extends AppCompatActivity {
@@ -57,12 +58,30 @@ public class Intro extends AppCompatActivity {
     public static EventUserInfo eventUserInfo = null;
     public static EventGetFriend eventGetFriend = null;
     public static EventAddChatRoom eventAddChatRoom = null;
+    public static EventInitChatRoom eventInitChatRoom = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
         init();
+        new Thread(){
+            @Override
+            public void run() {
+                List<db_User> a = AppDatabase.getInstance(Intro.this).myDao().getUserAll();
+//                List<db_Recode> b = AppDatabase.getInstance(Intro.this).myDao().getChatAll(roomNum);
+                List<db_Room> c = AppDatabase.getInstance(Intro.this).myDao().getRoomAll();
+                for(db_User aa : a)
+                    Log.d("asd"," "+aa);
+                Log.d("asd","###############################################################");
+//                for(db_Recode bb : b)
+//                    Log.d("asd"," "+bb);
+//                Log.d("asd","###############################################################");
+                for(db_Room cc : c)
+                    Log.d("asd"," "+cc);
+
+            }
+        }.start();
 
         File file = new File(this.getFilesDir(), FILENAME);
         if (!file.exists()) {//키보드높이 저장한 파일이 없다면
@@ -236,7 +255,12 @@ public class Intro extends AppCompatActivity {
                     Intent intent = new Intent(Intro.this, Login.class);
                     startActivity(intent);
                     finish();
-                    Toast.makeText(Intro.this, "등록된 로그인 정보가 다릅니다.", Toast.LENGTH_LONG).show();
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(Intro.this, "등록된 로그인 정보가 다릅니다.", Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
             }
         };
@@ -329,11 +353,11 @@ public class Intro extends AppCompatActivity {
     public static String dateTypeChange(String date,boolean is_diff_day){
         String []now_arr = new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()).split("/");
         String[] str = date.split("/");
-        if(!now_arr[0].equals(str[0]))
-            return str[0]+"."+str[1]+"."+str[2];
+        if(!now_arr[0].equals(str[0]))      //년도가 달랐을때
+            return str[0]+"."+str[1]+"."+str[2];        //월 일이 달랐을때
         else if(is_diff_day || !now_arr[2].equals(str[2]) || !now_arr[1].equals(str[1]))
             return str[1]+"월 "+str[2]+"일";
-        else {
+        else {                                      //시간만다를때
             int temp = Integer.parseInt(str[3]);
             if(temp > 11)
                 return (temp != 12 ? temp-12 : temp)+":"+str[4] + " pm"  ;
@@ -364,6 +388,9 @@ interface EventGetFriend{
     void messageArrive();
 }
 interface EventAddChatRoom{
+    void messageArrive();
+}
+interface EventInitChatRoom{
     void messageArrive();
 }
 interface OnBackKeyPressM{
