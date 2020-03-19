@@ -58,21 +58,34 @@ public class ItemChat {
 }
 
 
-class ItemList implements Serializable {
-    private String imagePath;
-    private String name;
-    private String message;
-    private String initial;
-    private int primary_num;
-    private String id;
+class ItemList implements Serializable {//ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date, SUM(re.recode_read)
+    private String imagePath;   //프사    채팅방 사진ro.room_picture
+    private String name;        //닉넴    채팅방 이름ro.room_name
+    private String message;     //상메    마지막 한 말re.recode_text
+    private String initial;     //검색용 namd의 이니셜
+    private int primary_num;    //db PK   db server Numro.room_num_server
+    private String id;          //db id   마지막 사람이 말한 시간re.recode_date
 
-    public ItemList(String a ,String b ,String c,int pnum,String idd){
+    private int unread;         //        안읽은 양SUM(re.recode_read)
+    public ItemList(String a ,String b ,String c,int pnum, String idd){
         imagePath = a;
         name = b;
         message =c;
         initial = Intro.getInitialSound(name);
         primary_num = pnum;
         id = idd;
+    }
+
+    public int getUnread() {
+        return unread;
+    }
+
+    public void setUnread(int unread) {
+        this.unread = unread;
+    }
+
+    public ItemList initRoom(int unreadd){
+        unread = unreadd; return this;
     }
     public int getPrimary_num(){ return primary_num;}
     public String getId(){return id;}

@@ -18,6 +18,8 @@ import java.io.FileReader;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -30,6 +32,7 @@ public class NodeJS {//싱글톤 클래스
     public static JSONObject recvMsg;
     public static JSONObject recvUserInfo;
     public static JSONArray recvFriendList;
+    public static int recvInt;
 
 
     private static class SingletonHolder {
@@ -80,6 +83,7 @@ public class NodeJS {//싱글톤 클래스
         socket.on("onBoolean",onBoolean);   //불린형 체크만을 위해서
         socket.on("userInfo",userInfo);
         socket.on("getFriend",getFriend);
+        socket.on("addChatRoom",addChatRoom);
 
         socket.connect();
     }
@@ -147,5 +151,12 @@ public class NodeJS {//싱글톤 클래스
                 Intro.eventGetFriend.messageArrive();
         }
     };
-
+    private Emitter.Listener addChatRoom = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            recvInt = (int)args[0];
+            if(Intro.eventAddChatRoom != null)
+                Intro.eventAddChatRoom.messageArrive();
+        }
+    };
 }

@@ -56,7 +56,7 @@ public class Intro extends AppCompatActivity {
     public static EventBoolean eventBoolean = null;
     public static EventUserInfo eventUserInfo = null;
     public static EventGetFriend eventGetFriend = null;
-
+    public static EventAddChatRoom eventAddChatRoom = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -361,6 +361,9 @@ interface EventUserInfo{
     void messageArrive();
 }
 interface EventGetFriend{
+    void messageArrive();
+}
+interface EventAddChatRoom{
     void messageArrive();
 }
 interface OnBackKeyPressM{

@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.github.chrisbanes.photoview.PhotoView;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -140,6 +141,10 @@ public class ProfileActivity extends AppCompatActivity {
                             Toast.makeText(ProfileActivity.this, "20글자 이내로 작성해주세요.", Toast.LENGTH_LONG).show();
                             return;
                         }
+                        else if(editText.getText().toString().contains("/")){//자르기용
+                            Toast.makeText(ProfileActivity.this, "포함 할 수 없는 글자가 있습니다.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
                         try {
                             if (isMe) {
                                 FileReader fileReader = new FileReader(new File(ProfileActivity.this.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
@@ -167,7 +172,15 @@ public class ProfileActivity extends AppCompatActivity {
                                 new Thread() {
                                     @Override
                                     public void run() {
-                                        AppDatabase.getInstance(ProfileActivity.this).myDao().updateFriendName(intent.getIntExtra("num", 0), editText.getText().toString());
+                                        try {
+                                            AppDatabase.getInstance(ProfileActivity.this).myDao().updateFriendName(intent.getIntExtra("num", 0), editText.getText().toString());
+                                            JSONObject jsonObject = new JSONObject();
+                                            jsonObject.put("name", editText.getText().toString());
+                                            jsonObject.put("id", Intro.ID);
+                                            NodeJS.sendJson("updateFriendName", jsonObject);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {

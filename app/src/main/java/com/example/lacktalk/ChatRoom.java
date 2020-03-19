@@ -33,7 +33,6 @@ import java.util.Random;
 
 public class ChatRoom extends Activity implements View.OnClickListener {
     Intent intent;
-    Random random;
     ImageView imageView_back, imageView_search, imageView_menu, imageView_add, imageView_send;
     ImageView drawer_alarm,drawer_exit,drawer_setting;
     TextView textView_name,drawer_main,drawer_picture,drawer_file;
@@ -51,27 +50,11 @@ public class ChatRoom extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_chatroom);
         init();
 
-        random = new Random();
-        Button button = findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                adapter.addItem("dfault", "Test ID", randomStr(), new SimpleDateFormat("yyyy/MM/dd/HH/ss").format(new Date()), random.nextBoolean());
-                adapter.notifyDataSetChanged();
-            }
-        });
-
+//                adapter.addItem("dfault", "Test ID", randomStr(), new SimpleDateFormat("yyyy/MM/dd/HH/ss").format(new Date()), random.nextBoolean());
+//                adapter.notifyDataSetChanged();
 
     }
 
-    public String randomStr() {
-        int a = random.nextInt(50);
-        String result = "";
-        for (int i = 0; i < a; i++) {
-            result += (char) ((Math.random() * 26) + 96);
-        }
-        return result;
-    }
 
     public void init() {
         //채팅방 위에 액션바(뒤로가기 이름 등등 ) 뷰 선언 및 보이게
@@ -198,6 +181,7 @@ public class ChatRoom extends Activity implements View.OnClickListener {
                 imageView_add.setRotation(imageView_add.getRotation() + 45);
                 break;
             case R.id.icon_send://추후 디비때문에 바꿔야함
+
                 if(editText_chat.getText().toString().length() != 0) {
                     adapter.addItem("dfault", "Test ID", editText_chat.getText().toString(), new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()), true);
                     editText_chat.setText("");

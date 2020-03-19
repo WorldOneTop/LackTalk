@@ -34,18 +34,28 @@ class db_User {
 }
 @Entity
 class  db_Room{
+
     public db_Room(){}
-    public db_Room(int a){room_num = a;}
-    public db_Room(String b){
-         room_user = b;
-         room_alarm = 1;
+    public db_Room(int a){room_num_server = a;}
+    public db_Room(int server_num,String name,String id){
+        room_num_server = server_num;
+        room_user = id;
+        String result = name.replace("/", ", ");
+        if(result.length()>20) {
+            result = result.substring(0,18);
+            result +="...";
+        }else {
+            result = result.substring(0,result.length()-2);
+        }
+        room_name = result;
+        room_alarm = 1;
     }
     @PrimaryKey(autoGenerate = true)
     public int room_num;    //내부디비에서만 쓰는 방번호
     public int room_num_server;//서버에 연동될 방 번호
     public String room_user;    //방에 참가한 유저
     public String room_name;    //방의 이름
-    public String room_picture; //방의 사진
+    public String room_picture; //방의 사진(아이콘)
     public String room_innerpicture; //방 내부 사진
     public int room_alarm;//알람설정되어있는지 1이면 알람 0이면 알람X
 }
@@ -54,17 +64,17 @@ class  db_Recode {
     public db_Recode(){}
     public db_Recode(int a){recode_num = a;}
     public db_Recode(int a,int b,String c,String d,String e,int f,int g){
-        recode_room = a; recode_amount = b; recode_who = c; recode_date = d; recode_date = e; recode_type = f; recode_read= g;
+        recode_room = a; recode_amount = b; recode_who = c; recode_date = d; recode_text = e; recode_type = f; recode_read= g;
     }
     @PrimaryKey(autoGenerate = true)
     public int recode_num;      //내부에서쓰일 채팅의 번호
-    public int recode_room;     //해당 채팅의 채팅방번호(내부디비에쓰는번호)
+    public int recode_room;     //서버에 연동된 방 번호
     public int recode_amount;   //안읽은 사람의 양
     public String recode_who;   //쓴사람
     public String recode_date;  //언제씀
     public String recode_text;  //뭐라씀
-    public int recode_type;     //뭐를씀
-    public int recode_read;     //안읽으면 1
+    public int recode_type;     //뭐를씀  글자면 1 이미지면 2 파일은 3
+    public int recode_read;     //안읽으면 1 더해서 총 안읽은 수 알아내기위해서
 }
 
 
@@ -73,7 +83,7 @@ interface MyDao {
     @Insert     //친구 추가
     void insertUser(db_User user);
     @Insert     //채팅방 생성
-    void insertRoom(db_Room room);
+    long insertRoom(db_Room room);//마지막행의 숨은칼럼인rowid(int자동증가)가 반환됨(PK와같음)
     @Insert     //채팅 생성
     void insertRecode(db_Recode recode);
     @Update     //친구의 메시지 사진 변경    기본키로 조회한다고 함
@@ -105,9 +115,15 @@ interface MyDao {
     @Query("SELECT room_user FROM db_Room  WHERE room_num = :roomNum")
     String getInUser(int roomNum);                  //해당 방의 유저만 보기
 
-    @Query("SELECT ro.room_picture, ro.room_name , re.recode_text, re.recode_date, SUM(re.recode_read) FROM db_Room as ro,db_Recode as re " +
-            "WHERE ro.room_num = re.recode_room group by ro.room_num ORDER BY re.recode_date DESC")
-    Cursor getChatLast();                 //전체적인 채팅방뷰 갖고오기(ChatList)
+    @Query("SELECT ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date, SUM(re.recode_read) FROM db_Room as ro,db_Recode as re " +
+            "WHERE ro.room_num_server = re.recode_room group by ro.room_num ORDER BY re.recode_date DESC")
+    Cursor getChatLastList();                 //전체적인 채팅방뷰 갖고오기(ChatList)
+
+
+    @Query("SELECT * FROM db_Room")
+    List<db_Room> getRoomAll();
+    @Query("SELECT * FROM db_Recode")
+    List<db_Recode> getRecodeAll();
 }
 @Database(entities = {db_User.class,db_Room.class,db_Recode.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {

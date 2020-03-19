@@ -41,20 +41,34 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 		});
 	});
 	socket.on('userUpdate',function(msg){
-		sql.query("UPDATE user SET name = '"+msg.name+"',picture=?,msg=? WHERE id='"+msg.id+"'; ",[msg.picture,msg.msg],function(error,results,fields){
-			if(error)console.log("userUpdate 에러");
-			console.log("name : "+msg.name);
+		sql.query("UPDATE user SET name = ?,picture=?,msg=? WHERE id='"+msg.id+"'; ",[msg.name,msg.picture,msg.msg],function(error,results,fields){
 		});
 	});
 	socket.on('addFriend',function(msg){
-		sql.query("INSERT INTO user_friend(id_me,id_friend) VALUES('"+ msg.me +"','"+ msg.friend +"','"+msg.name+"');",function(error,results,fields){
+		sql.query("INSERT INTO user_friend(id_me,id_friend,name_friend) VALUES('"+ msg.me +"','"+ msg.friend +"','"+msg.name+"');",function(error,results,fields){
 		});
 	});
 	socket.on('getFriend',function(msg){
-		sql.query("SELECT user.id,user.name,user.picture,user.msg FROM user, user_friend WHERE user.id = user_friend.id_friend AND user_friend.id_me = '"+msg.id+"';",function(error,results,fields){
+		sql.query("SELECT user.id, user_friend.name_friend, user.picture, user.msg FROM user, user_friend WHERE user.id = user_friend.id_friend AND user_friend.id_me = '"+msg.id+"';",function(error,results,fields){
 			io.emit('getFriend',results);
 		});
 	});
+	socket.on('updateFriendName',function(msg){
+		sql.query("UPDATE user_friend SET name_friend = ? WHERE id_me = ?",[msg.name,msg.id],function(error,results,fields){
+		});
+	});
+	socket.on('deleteFriend',function(msg){
+		sql.query("DELETE FROM user_friend WHERE id_me= ? AND id_friend = ?;",[msg.me,msg.friend],function(error,results,fields){
+		});
+	});
+	socket.on('addChatRoom',function(msg){
+		sql.query("INSERT INTO chatroom(room_user) VALUES(?);",[msg.users],function(error,results,fields){
+			sql.query("SELECT room_num FROM chatroom ORDER BY room_num DESC LIMIT 1;",function(error,results,fields){
+				io.emit("addChatRoom",results[0].room_num);
+			});
+		});
+	});
+
 
 });
 login_callback = function(id,pw, callback){
@@ -105,19 +119,18 @@ http.listen(12345, function(){
 
 // CREATE TABLE chatroom(
 // 	room_num INT AUTO_INCREMENT PRIMARY KEY,
-// 	room_user varchar(200)
+// 	room_user TEXT
 // );
 
 // CREATE TABLE chatrecode(
 // 	recode_num INT AUTO_INCREMENT PRIMARY KEY,
 // 	room_num INT,
-// 	amount INT NOT NULL,
-// 	who INT,
-// 	date DATETIME NOT NULL,
+// 	amount SMALLINT NOT NULL,
+// 	who varchar(30) NOT NULL,
+// 	date TIMESTAMP NOT NULL,
 // 	text TEXT NOT NULL,
-// 	type INT NOT NULL,
-// 	FOREIGN KEY (room_num) REFERENCES chatroom(room_num),
-// 	FOREIGN KEY (who) REFERENCES user(user_num)
+// 	type TINYINT NOT NULL,
+// 	FOREIGN KEY (room_num) REFERENCES chatroom(room_num)
 // );
 
 // CREATE TABLE user_friend(
@@ -127,7 +140,7 @@ http.listen(12345, function(){
 // 	name_friend varchar(20) NOT NULL
 // );
 
-//type : 1-문자 , 2-이미지 , 3-파일  ,amount-읽지않은사람의양
+//type : 1-문자 , 2-이미지 , 3-파일  ,amount-읽지않은사람의양,|가 사람 나누는 기준
 
 
 // 콜백함수 기본 형태, 선언 후 plus실행시 인자값의 함수가 실행되면서 log실행

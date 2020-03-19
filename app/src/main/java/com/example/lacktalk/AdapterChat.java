@@ -195,6 +195,11 @@ class AdapterList extends BaseAdapter implements Filterable {
         ImageView picture;
         TextView name, message, first_text;
         RelativeLayout relativeLayout;
+        TextView text, unRead;
+    }
+
+    public boolean getIsFilter() {
+        return isFilter;
     }
 
     @Override
@@ -205,8 +210,14 @@ class AdapterList extends BaseAdapter implements Filterable {
         // "listview_item" Layout을 inflate하여 convertView 참조 획득. 및 홀더 부분
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.listview_list, parent, false);
             viewHolder = new ViewHolder();
+            if (isUserList)
+                convertView = inflater.inflate(R.layout.listview_list, parent, false);
+            else {
+                convertView = inflater.inflate(R.layout.listview_chatlist, parent, false);
+                viewHolder.unRead = convertView.findViewById(R.id.chatlist_unread);
+                viewHolder.text = convertView.findViewById(R.id.chatlist_text);
+            }
             viewHolder.picture = convertView.findViewById(R.id.chatlist_profile);
             viewHolder.name = convertView.findViewById(R.id.chatlist_nickname);
             viewHolder.message = convertView.findViewById(R.id.chatlist_profile_massage);
@@ -219,29 +230,44 @@ class AdapterList extends BaseAdapter implements Filterable {
         //구현부분
         ItemList listViewItem = filteredItemList.get(position);
 
+        //공통 설정 부분
         viewHolder.name.setText(listViewItem.getName());
-        viewHolder.message.setText(listViewItem.getMessage());
 //        viewHolder.picture.setImageResource();
 
         //디폴트 설정
         if (isUserList) {
             init_UserList(viewHolder, position);
+            viewHolder.message.setText(listViewItem.getMessage());
+            if (viewHolder.message.getText().toString().isEmpty())
+                viewHolder.message.setVisibility(View.GONE);
+            else
+                viewHolder.message.setVisibility(View.VISIBLE);
+
         } else {
-            viewHolder.message.setBackground(null);
+            viewHolder.text.setText(listViewItem.getMessage());
+            viewHolder.message.setText(Intro.dateTypeChange(listViewItem.getId(), false));//말한시간
+
+            if(listViewItem.getUnread() == 0)
+                viewHolder.unRead.setVisibility(View.GONE);
+            else{
+                viewHolder.unRead.setText(listViewItem.getUnread()+"");
+                viewHolder.unRead.setVisibility(View.VISIBLE);
+            }
         }
-        if(viewHolder.message.getText().toString().isEmpty())
-            viewHolder.message.setVisibility(View.GONE);
-        else
-            viewHolder.message.setVisibility(View.VISIBLE);
 
         return convertView;
     }
 
     // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
-    public void addItem(String imagePath, String name, String text,int pnum,String idd) {
-        listViewItemList.add(new ItemList(imagePath, name, text,pnum,idd));
+    public void addItem(String imagePath, String name, String text, int pnum, String idd) {
+        listViewItemList.add(new ItemList(imagePath, name, text, pnum, idd));
     }
-    public void clearData(){
+
+    public void addRoom(String a, String b, String c, int d, String e, int f) {
+        listViewItemList.add(new ItemList(a, b, c, d, e).initRoom(f));
+    }
+
+    public void clearData() {
         listViewItemList.clear();
     }
 
@@ -260,12 +286,13 @@ class AdapterList extends BaseAdapter implements Filterable {
         return filteredItemList.size();
     }
 
-    public ArrayList<ItemList> getListViewItemList(){
+    public ArrayList<ItemList> getListViewItemList() {
         return listViewItemList;
     }
-    public void deleteItem_num(int p_num){
-        for(int i=0;i<listViewItemList.size();i++){
-            if(listViewItemList.get(i).getPrimary_num() == p_num) {
+
+    public void deleteItem_num(int p_num) {
+        for (int i = 0; i < listViewItemList.size(); i++) {
+            if (listViewItemList.get(i).getPrimary_num() == p_num) {
                 listViewItemList.remove(i);
                 notifyDataSetChanged();
                 return;
@@ -277,17 +304,12 @@ class AdapterList extends BaseAdapter implements Filterable {
         if (0 <= position && position < 3 && !isFilter) { // 초기화 3개 부문
             viewHolder.picture.setVisibility(View.GONE);
             viewHolder.name.setVisibility(View.GONE);
-            viewHolder.message.setVisibility(View.GONE);
             viewHolder.first_text.setVisibility(View.GONE);
             viewHolder.relativeLayout.setVisibility(View.GONE);
             if (position == 0) viewHolder.first_text.setVisibility(View.VISIBLE);
             else if (position == 1) {
                 viewHolder.picture.setVisibility(View.VISIBLE);
                 viewHolder.name.setVisibility(View.VISIBLE);
-                if (!listViewItemList.get(1).getMessage().isEmpty())
-                    viewHolder.message.setVisibility(View.VISIBLE);//자신의 말이 비어잇지가 않을때만 보이게
-                else
-                    viewHolder.message.setVisibility(View.GONE);
             } else {
                 viewHolder.relativeLayout.setVisibility(View.VISIBLE);
                 ((TextView) (viewHolder.relativeLayout.findViewById(R.id.sumFriend))).setText(getCount() - 3 + "명");
@@ -295,10 +317,6 @@ class AdapterList extends BaseAdapter implements Filterable {
         } else {//이외 부분
             viewHolder.picture.setVisibility(View.VISIBLE);
             viewHolder.name.setVisibility(View.VISIBLE);
-            if(listViewItemList.get(position).getMessage().isEmpty())
-                viewHolder.message.setVisibility(View.GONE);
-            else
-                viewHolder.message.setVisibility(View.VISIBLE);
             viewHolder.first_text.setVisibility(View.GONE);
             viewHolder.relativeLayout.setVisibility(View.GONE);
         }

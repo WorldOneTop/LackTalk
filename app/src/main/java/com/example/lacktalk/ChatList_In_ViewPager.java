@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -27,6 +28,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -49,6 +51,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
     private Handler handler;
     private Activity activity;
     public OnBackKeyPressM onBackKeyPressM;
+
     ChatList_In_ViewPager() {
     }//앱 재실행 오류 이슈 떄문에 작성만
 
@@ -86,7 +89,10 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
 
         //리스트뷰 설정은 어뎁터에서
         adapterList = new AdapterList(isUserList);
-        listView = rootView.findViewById(R.id.listview_list);
+        if(isUserList)
+            listView = rootView.findViewById(R.id.listview_list);
+        else
+            listView = rootView.findViewById(R.id.listview_list);
         listView.setAdapter(adapterList);
 
         imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);//키보드 이벤트 발생용
@@ -96,6 +102,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         } else {
             actionbar_add.setImageResource(R.drawable.icon_addchat);
             actionbar_main.setText("채팅방들");
+            initChatList();
         }
 
 
@@ -103,44 +110,69 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
     }
 
     public void initFriendList() {
-        try {
-            adapterList.clearData();
-            FileReader fileReader = new FileReader(new File(context.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
-            char[] buf = new char[2048];
-            fileReader.read(buf);
-            JSONObject jsonObject = new JSONObject(new String(buf));
-            fileReader.close();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    adapterList.clearData();
+                    FileReader fileReader = new FileReader(new File(context.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
+                    char[] buf = new char[2048];
+                    fileReader.read(buf);
+                    JSONObject jsonObject = new JSONObject(new String(buf));
+                    fileReader.close();
 
-            myName = jsonObject.getString("name");
-            myPicture = jsonObject.getString("picture");
-            myMsg = jsonObject.getString("msg");
+                    myName = jsonObject.getString("name");
+                    myPicture = jsonObject.getString("picture");
+                    myMsg = jsonObject.getString("msg");
 
-            if (isUserList) {
-                adapterList.addItem("", "", "", -1, "");
-                adapterList.addItem(myPicture, myName, myMsg, -1, "");//나자신도 추가해야함
-                adapterList.addItem("", "", "", -1, "");
+                    if (isUserList) {
+                        adapterList.addItem("", "", "", -1, "");
+                        adapterList.addItem(myPicture, myName, myMsg, -1, "");//나자신도 추가해야함
+                        adapterList.addItem("", "", "", -1, "");
 
-                new Thread() {
-                    @Override
-                    public void run() {
-                        List<db_User> list = AppDatabase.getInstance(context).myDao().getUserAll();
-                        for (db_User user : list) {
-                            adapterList.addItem(user.picture, user.name, user.msg, user.user_num, user.id);
-                        }
-                        handler.post(new Runnable() {
+                        new Thread() {
                             @Override
                             public void run() {
-                                adapterList.notifyDataSetChanged();
+                                List<db_User> list = AppDatabase.getInstance(context).myDao().getUserAll();
+                                for (db_User user : list) {
+                                    adapterList.addItem(user.picture, user.name, user.msg, user.user_num, user.id);
+                                }
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        adapterList.notifyDataSetChanged();
+                                    }
+                                });
+
                             }
-                        });
+                        }.start();
 
                     }
-                }.start();
-
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
+    }
+
+    public void initChatList() {
+        adapterList.clearData();
+        new Thread() {
+            @Override
+            public void run() {// ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date, SUM(re.recode_read)
+                Cursor list = AppDatabase.getInstance(context).myDao().getChatLastList();
+                while (list.moveToNext()) {
+                    adapterList.addRoom(list.getString(0), list.getString(1), list.getString(2), list.getInt(3), list.getString(4), list.getInt(5));
+                }
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapterList.notifyDataSetChanged();
+                    }
+                });
+            }
+        }.start();
+
     }
 
     public void init_OnClick() {
@@ -148,7 +180,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         actionbar_add.setOnClickListener(this);
         searchImage.setOnClickListener(this);
 
-         onBackKeyPressM = new OnBackKeyPressM() {
+        onBackKeyPressM = new OnBackKeyPressM() {
             @Override
             public boolean press() {
                 if (searchLayout.getVisibility() == View.VISIBLE) {
@@ -196,7 +228,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                                                     intent.putExtra("num", item.getPrimary_num());
                                                     intent.putExtra("position", i);
                                                     intent.putExtra("item", adapterList.getItem(i));
-                                                    if (i != 0 && i != 2) {
+                                                    if ((i != 0 && i != 2)||adapterList.getIsFilter()) {
                                                         startActivity(intent);
                                                     }
 
@@ -208,13 +240,13 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
 
                 @Override
                 public boolean onItemLongClick(final AdapterView<?> adapterView, final View view, final int i, long l) {
-                    if(i!=1) {
+                    if (i > 2 || adapterList.getIsFilter()) {//필터안했을때 3이상이거나 했을때 전부
                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());//getContext>> 현재 활성화된activity의 context반환(View클래스에있음)
                         builder.setItems(logclickbuilderItem, new DialogInterface.OnClickListener() {    // 목록 클릭시 설정
                             public void onClick(DialogInterface dialog, int index) {
-                                if (index == 0) {
+                                if (index == 0) {//대화방 추가를 클릭했을떄
 
-                                } else {
+                                } else {//친구삭제를 클릭 했을 때
                                     final int pnum = ((ItemList) adapterView.getAdapter().getItem(i)).getPrimary_num();
                                     new Thread() {
                                         @Override
@@ -222,6 +254,15 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                                             AppDatabase.getInstance(context).myDao().deleteUser(new db_User(pnum));
                                         }
                                     }.start();
+                                    try {
+                                        JSONObject jsonObject = new JSONObject();
+                                        jsonObject.put("me", Intro.ID);
+                                        jsonObject.put("friend", ((ItemList) adapterView.getAdapter().getItem(i)).getName());
+                                        NodeJS.sendJson("deleteFriend", jsonObject);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
                                     Toast.makeText(context, ((ItemList) adapterView.getAdapter().getItem(i)).getName() + "님이 삭제되었습니다.", Toast.LENGTH_LONG).show();
                                     ((AdapterList) adapterView.getAdapter()).deleteItem_num(pnum);
                                 }
@@ -270,7 +311,6 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                 if (isUserList) {
                     startActivity(intent);
                 } else {
-
                     intent.putExtra("itemList", ChatList.viewPager_chatList[0].adapterList.getListViewItemList());
                     startActivity(intent);
                 }

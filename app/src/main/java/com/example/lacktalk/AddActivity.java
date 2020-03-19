@@ -62,7 +62,8 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
     private Intent intent;
     private AdapterAdd adapterAdd;
     private LayoutInflater inflater;
-    private HashMap<ItemList,View> hashMap;
+    private HashMap<ItemList, View> hashMap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -183,26 +184,24 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         listView_friend.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                ((AdapterAdd)adapterView.getAdapter()).notifyDataSetChanged();
-                ItemList item = ((AdapterAdd)adapterView.getAdapter()).getItem(i);
-                if(!listView_friend.isItemChecked(i)) {//해당 포지션의 뷰가체크되지않았으면
+                ((AdapterAdd) adapterView.getAdapter()).notifyDataSetChanged();
+                ItemList item = ((AdapterAdd) adapterView.getAdapter()).getItem(i);
+                if (!listView_friend.isItemChecked(i)) {//해당 포지션의 뷰가체크되지않았으면
                     linearLayout.removeView(hashMap.get(item));
                     hashMap.remove(item);
-                }
-                else{//클릭해서 그 아이템이 체크가 됐으면
+                } else {//클릭해서 그 아이템이 체크가 됐으면
                     View inflaterView = inflater.inflate(R.layout.listview_horizontal, linearLayout, false);
 
-                    if(item.getImagePath().isEmpty())
-                        ((ImageView)inflaterView.findViewById(R.id.horizon_img)).setImageResource(R.drawable.defaultimg);
-                    ((TextView)inflaterView.findViewById(R.id.horizon_text)).setText(item.getName());
-                    hashMap.put(item,inflaterView);
+                    if (item.getImagePath().isEmpty())
+                        ((ImageView) inflaterView.findViewById(R.id.horizon_img)).setImageResource(R.drawable.defaultimg);
+                    ((TextView) inflaterView.findViewById(R.id.horizon_text)).setText(item.getName());
+                    hashMap.put(item, inflaterView);
                     linearLayout.addView(inflaterView);
                 }
-                if(hashMap.size()==0) {
+                if (hashMap.size() == 0) {
                     scrollView.setVisibility(View.GONE);
                     findViewById(R.id.add_resultImg).setVisibility(View.GONE);
-                }
-                else {
+                } else {
                     scrollView.setVisibility(View.VISIBLE);
                     findViewById(R.id.add_resultImg).setVisibility(View.VISIBLE);
                 }
@@ -250,11 +249,11 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                                     new Thread() {
                                         @Override
                                         public void run() {
-                                            if(Intro.ID.equals(id))
+                                            if (Intro.ID.equals(id))
                                                 handler.post(new Runnable() {//내아이디는 파일로 저장되어있음
                                                     @Override
                                                     public void run() {
-                                                            Toast.makeText(AddActivity.this, "자기 자신은 등록 할 수 없습니다.", Toast.LENGTH_LONG).show();
+                                                        Toast.makeText(AddActivity.this, "자기 자신은 등록 할 수 없습니다.", Toast.LENGTH_LONG).show();
                                                     }
                                                 });
                                             else if (AppDatabase.getInstance(AddActivity.this).myDao().getUserSame(id) == null) {
@@ -263,6 +262,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                                                     JSONObject jsonObject = new JSONObject();
                                                     jsonObject.put("me", Intro.ID);
                                                     jsonObject.put("friend", id);
+                                                    jsonObject.put("name", name.getText().toString());
                                                     NodeJS.sendJson("addFriend", jsonObject);
                                                     handler.post(new Runnable() {
                                                         @Override
@@ -271,12 +271,14 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                                                             onBackPressed();
                                                         }
                                                     });
-                                                }catch(Exception e){ e.printStackTrace();}
-                                            }else
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                            } else
                                                 handler.post(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                            Toast.makeText(AddActivity.this, "이미 친구로 등록 하셨습니다.", Toast.LENGTH_LONG).show();
+                                                        Toast.makeText(AddActivity.this, "이미 친구로 등록 하셨습니다.", Toast.LENGTH_LONG).show();
                                                     }
                                                 });
                                         }
@@ -292,11 +294,41 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 }
                 break;
             case R.id.add_resultImg://대화창 만들기 버튼 눌렀을때
-                    Iterator iterator = hashMap.keySet().iterator();
-                    ItemList [] itemLists = new ItemList[hashMap.size()];
-//                    while(iterator.hasNext()){
-//                        ItemList itemList
-//                    }
+                Iterator iterator = hashMap.keySet().iterator();
+                String str = Intro.ID+"/";
+                String name = "";
+                while (iterator.hasNext()) {
+                    ItemList itemList =(ItemList) iterator.next();
+                    str += itemList.getId() + "/";
+                    name +=itemList.getName() + "/";
+                }
+                final String result = str;
+                final String resultName = name;
+                try {
+                    final JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("users", str);
+                    Intro.eventAddChatRoom = new EventAddChatRoom() {
+                        @Override
+                        public void messageArrive() {
+                            new Thread() {
+                                @Override
+                                public void run() {
+                                    db_Recode db_recode = new db_Recode(NodeJS.recvInt,0,Intro.ID,new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()),"",1,0);
+                                    AppDatabase.getInstance(AddActivity.this).myDao().insertRecode(db_recode);
+                                    ChatList.viewPager_chatList[1].initChatList();
+                                    AppDatabase.getInstance(AddActivity.this).myDao().insertRoom(new db_Room(NodeJS.recvInt,resultName,result));
+                                    Intro.eventAddChatRoom = null;
+                                    finish();
+                                }
+                            }.start();
+
+                        }
+                    };
+                    NodeJS.sendJson("addChatRoom", jsonObject);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
 
                 break;
@@ -318,10 +350,12 @@ class AdapterAdd extends BaseAdapter implements Filterable {
 
     AdapterAdd(ArrayList<ItemList> userList) {
         listViewItemList.addAll(userList);
-        listViewItemList.remove(0);listViewItemList.remove(0);listViewItemList.remove(0);
+        listViewItemList.remove(0);
+        listViewItemList.remove(0);
+        listViewItemList.remove(0);
         filteredItemList = listViewItemList;
         isChecked = new ArrayList<>();
-        for(int i=0;i<listViewItemList.size();i++)
+        for (int i = 0; i < listViewItemList.size(); i++)
             isChecked.add(false);
     }
 
@@ -356,7 +390,7 @@ class AdapterAdd extends BaseAdapter implements Filterable {
         viewHolder.name.setText(listViewItem.getName());
 //        viewHolder.checkBox.setOnCheckedChangeListener(changeListener);
         viewHolder.checkBox.setTag(listViewItem);
-        viewHolder.checkBox.setChecked(((ListView)parent).isItemChecked(position));
+        viewHolder.checkBox.setChecked(((ListView) parent).isItemChecked(position));
 
         return convertView;
     }

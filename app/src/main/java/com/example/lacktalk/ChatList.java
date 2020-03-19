@@ -154,16 +154,6 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener 
         }
     }
 
-    public interface onKeyBackPressedListener {
-        public void onBack();
-    }
-
-    private onKeyBackPressedListener mOnKeyBackPressedListener;
-
-    public void setOnKeyBackPressedListener(onKeyBackPressedListener listener) {
-        mOnKeyBackPressedListener = listener;
-    } // In MyActivity
-
     @Override
     public void onBackPressed() {
         if (pager != null) {
