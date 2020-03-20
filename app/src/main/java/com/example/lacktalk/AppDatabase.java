@@ -162,7 +162,7 @@ interface MyDao {
             "WHERE ro.room_num_server = re.recode_room group by ro.room_num_server ORDER BY re.recode_date DESC")
     Cursor getChatLastList();                 //전체적인 채팅방뷰 갖고오기(ChatList)
 
-    @Query("SELECT u.picture,u.name,re.recode_text,re.recode_date,re.recode_amount,re.recode_type FROM db_recode as re, db_User as u WHERE re.recode_who = u.id AND re.recode_room =:roomNum ORDER BY re.recode_date DESC LIMIT 1,-1")
+    @Query("SELECT u.picture,u.name,re.recode_text,re.recode_date,re.recode_amount,re.recode_type,u.id FROM db_recode as re, db_User as u WHERE re.recode_who = u.id AND re.recode_room =:roomNum ORDER BY re.recode_date DESC")
     Cursor getChatInRoom(int roomNum);                 //해당 방에 필요한 채팅 정보
     @Query("SELECT name FROM db_User WHERE id=:id")
     String getNickname(String id);

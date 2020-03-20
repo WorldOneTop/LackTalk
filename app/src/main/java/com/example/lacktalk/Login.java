@@ -194,6 +194,7 @@ public class Login extends AppCompatActivity {
                     final Intent intent = new Intent(Login.this, ChatList.class);
                     Intro.ID = id;
                     Intro.PW = SHA_str;
+                    NodeJS.getInstance().setHostStart(NodeJS.HOST, Login.this);
                     if (isLogin) {     //신규 사용자가 아니라면 정보 얻기위해서
                         try {
                             rootLayout.setAlpha(1);//msg가 들어온거 확인한시점
@@ -234,7 +235,7 @@ public class Login extends AppCompatActivity {
                                                 try {
                                                     if (NodeJS.recvChatList != null) {
                                                         for (int i = 0; i < NodeJS.recvChatList.length(); i++) {
-                                                            db_Recode db_recode = new db_Recode(NodeJS.recvChatList.getJSONObject(i).getInt("num"), 0, Intro.ID, new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()), "", 1, 0);
+                                                            db_Recode db_recode = new db_Recode(NodeJS.recvChatList.getJSONObject(i).getInt("num"), 0, Intro.ID, new SimpleDateFormat("yyyy/MM/dd/HH/mm/ss").format(new Date()), "", 1, 0);
                                                             AppDatabase.getInstance(Login.this).myDao().insertRecode(db_recode);
                                                             String resultName;
                                                             String []temp = NodeJS.recvChatList.getJSONObject(i).getString("user").split("/");
@@ -303,7 +304,6 @@ public class Login extends AppCompatActivity {
                         startActivity(intent);
                         finish();
                         handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
-
                     }
                 } else {//사용자 정보가 안맞다면
                     rootLayout.setAlpha(1f);

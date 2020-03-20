@@ -158,8 +158,8 @@ public class AdapterChat extends BaseAdapter {
     }
 
     // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
-    public void addItem(String imagePath, String name, String text, String time, boolean isme,int amount,int type) {
-        listViewItemList.add(new ItemChat(imagePath, name, text, time, isme,amount,type));
+    public void addItem(String imagePath, String name, String text, String time, boolean isme,int amount,int type,String id) {
+        listViewItemList.add(new ItemChat(imagePath, name, text, time, isme,amount,type,id));
     }
 
     // 지정한 위치(position)에 있는 데이터와 관계된 아이템(row)의 ID를 리턴. : 필수 구현

@@ -315,7 +315,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                                 @Override
                                 public void run() {Log.d("asd","이게두번실행될리도없고말이지?");
                                     Intro.eventAddChatRoom = null;
-                                    db_Recode db_recode = new db_Recode(NodeJS.recvInt,0,Intro.ID,new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()),"",1,0);
+                                    db_Recode db_recode = new db_Recode(NodeJS.recvInt,0,Intro.ID,new SimpleDateFormat("yyyy/MM/dd/HH/mm/ss").format(new Date()),"",1,0);
                                     AppDatabase.getInstance(AddActivity.this).myDao().insertRecode(db_recode);
                                     AppDatabase.getInstance(AddActivity.this).myDao().insertRoom(new db_Room(NodeJS.recvInt,resultName,result));
                                     ChatList.viewPager_chatList[1].initChatList();

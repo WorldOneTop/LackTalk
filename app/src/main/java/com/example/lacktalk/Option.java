@@ -59,6 +59,8 @@ public class Option extends Fragment implements View.OnClickListener {
                         .setPositiveButton("예",
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
+                                        Intro.ID="";
+                                        NodeJS.getInstance().setHostStart(NodeJS.HOST, context);
                                         new File(context.getFilesDir(), Intro.FILENAME_LOGIN_PATH).delete();
                                         startActivity(new Intent(context, Login.class));
                                         chatList.finish();

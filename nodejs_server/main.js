@@ -20,24 +20,32 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
     socket.on('disconnect', function(){//연결해제 이벤트
     	console.log('user disconnected');
     });
-
 	socket.on('login', function(msg){//로그인 확인 이벤트
-		login_callback(msg.id,msg.pw,function(val_bool){
-			io.emit('onBoolean',val_bool);
-		});
+		sql.query("SELECT * FROM user WHERE  user.id = '"+msg.id+"' and user.pw = '"+msg.pw+"';", function (error, results, fields) {console.log(msg.myID+"AAAAAAAAAAAAAA");
+			if (error) {
+				io.emit('onBoolean'+msg.myID,false);
+			} 
+			else { //결과는 배열인덱스.키값으로 접근 없으면 배열.length가 0
+				if(results.length != 0){//로그인 정보가 있다면 나머지 정보도 전송
+					io.emit('msg'+msg.myID,results[0]);
+				}
+			io.emit('onBoolean'+msg.myID,results.length != 0);//결과가 0이면 아이디가 X이므로 false
+		}
+	});
 	});
 
 	socket.on('signup',function(msg){//아이디 중복 확인 및 회원가입 이벤트
 		signup_callback(msg.id,msg.pw,function(val_bool){
-			io.emit('onBoolean',val_bool);
+			io.emit('onBoolean'+msg.myID,val_bool);
 		});
 	});
 	socket.on('msg', function(msg){
-		io.emit('msg', msg);
+		io.emit('msg'+msg.myID, msg);
+
 	});
 	socket.on('userInfo',function(msg){
 		sql.query("SELECT id,name,picture,msg FROM user WHERE id='"+msg.id+"'; ",function(error,results,fields){
-			io.emit('userInfo',results[0]);
+			io.emit('userInfo'+msg.myID,results[0]);
 		});
 	});
 	socket.on('userUpdate',function(msg){
@@ -47,14 +55,19 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 	});
 	socket.on('addFriend',function(msg){
 		sql.query("INSERT INTO user_friend(id_me,id_friend,name_friend) VALUES(?,?,?);",[msg.me,msg.friend,msg.name],function(error,results,fields){
-		});//위는 그냥 친구추가 아래는 상대방도 자동으로 추가시킴
-		sql.query("INSERT INTO user_friend(id_me,id_friend,name_friend) VALUES(?,?,?);",[msg.friend,msg.me,msg.myname],function(error,results,fields){
-			io.emit('addFriend',"친추요청옴");
+		});//위는 그냥 친구추가 아래는 상대방도 자동으로 추가시킴 (없다면)
+		sql.query("SELECT * FROM user_friend WHERE id_me = ? AND id_friend = ?",[msg.friend,msg.me], function(error,results,fields){
+			if(results=="[]"){
+				sql.query("INSERT INTO user_friend(id_me,id_friend,name_friend) VALUES(?,?,?);",[msg.friend,msg.me,msg.myname],function(error,results,fields){
+					io.emit('addFriend'+msg.myID,"친추요청옴");
+				});	
+			}
 		});
- 	});
+		
+	});
 	socket.on('getFriend',function(msg){
 		sql.query("SELECT user.id, user_friend.name_friend, user.picture, user.msg FROM user, user_friend WHERE user.id = user_friend.id_friend AND user_friend.id_me = '"+msg.id+"';",function(error,results,fields){
-			io.emit('getFriend',results);
+			io.emit('getFriend'+msg.myID,results);
 		});
 	});
 	socket.on('updateFriendName',function(msg){
@@ -68,7 +81,7 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 	socket.on('addChatRoom',function(msg){
 		sql.query("INSERT INTO chatroom(room_user) VALUES(?);",[msg.users],function(error,results,fields){
 			sql.query("SELECT room_num FROM chatroom ORDER BY room_num DESC LIMIT 1;",function(error,results,fields){
-				io.emit("addChatRoom",results[0].room_num);
+				io.emit("addChatRoom"+msg.myID,results[0].room_num);
 			});
 		});
 	});
@@ -91,21 +104,18 @@ io.on('connection', function(socket){	//연결 되면 이벤트 설정
 					}
 				}
 			}console.log(jsonArr);
-			io.emit('initChatRoom',jsonArr);
+			io.emit('initChatRoom'+msg.myID,jsonArr);
 		});
 	});
-
-
 });
 
-
-login_callback = function(id,pw, callback){
-	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"' and user.pw = '"+pw+"';", function (error, results, fields) { 
+login_callback = function(id,pw,myID, callback){
+	sql.query("SELECT * FROM user WHERE  user.id = '"+id+"' and user.pw = '"+pw+"';", function (error, results, fields) {
 		if (error) {
 			callback(false);
 		} else { //결과는 배열인덱스.키값으로 접근 없으면 배열.length가 0
 			if(results.length != 0){//로그인 정보가 있다면 나머지 정보도 전송
-				io.emit('msg',results[0]);
+				io.emit('msg'+myID,results[0]);
 			}
 			callback(results.length != 0);	//결과가 0이면 아이디가 X이므로 false
 

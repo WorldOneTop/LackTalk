@@ -14,9 +14,10 @@ public class ItemChat {
     private boolean isme;    //내가 쓴건지
     private int amount;      //얼마나 안읽었는지
     private int type;        //쓴 타입이 뭔지
+    private String id;
 
-    public ItemChat(String a,String b,String c,String d,boolean e,int f,int g){
-        imagePath = a; name = b; text = c; time = d; isme = e; amount = f; type = g;
+    public ItemChat(String a,String b,String c,String d,boolean e,int f,int g,String idd){
+        imagePath = a; name = b; text = c; time = d; isme = e; amount = f; type = g; id =idd;
     }
     public boolean getIsme(){
         return isme;

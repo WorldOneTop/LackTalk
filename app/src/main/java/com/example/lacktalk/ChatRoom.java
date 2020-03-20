@@ -170,10 +170,11 @@ public class ChatRoom extends Activity implements View.OnClickListener {
 //                Log.d("asd","###############################################################");
 //                for(db_Room cc : c)
 //                    Log.d("asd"," "+cc);
-                                        //한사람이미지, 한사람닉네임,내용,시간   ,amount,타입
+                                        //한사람이미지, 한사람닉네임,내용,시간   ,amount,타입, 쓴사람아이디
                 Cursor list = AppDatabase.getInstance(ChatRoom.this).myDao().getChatInRoom(roomNum);
+                list.moveToNext();//맨처음은 방 만드려고 만든 데이터
                 while(list.moveToNext()){Log.d("asd","실행");
-                    adapter.addItem(list.getString(0), list.getString(1),list.getString(2), list.getString(3), Intro.ID.equals(list.getString(1)),list.getInt(4),list.getInt(5));
+                    adapter.addItem(list.getString(0), list.getString(1),list.getString(2), list.getString(3), Intro.ID.equals(list.getString(6)),list.getInt(4),list.getInt(5),list.getString(6));
                 }
                 handler.post(new Runnable() {
                     @Override
@@ -183,6 +184,7 @@ public class ChatRoom extends Activity implements View.OnClickListener {
                 });
             }
         }.start();
+
     }
     @Override
     public void onClick(View view) {
@@ -219,7 +221,7 @@ public class ChatRoom extends Activity implements View.OnClickListener {
                 break;
             case R.id.icon_send://보냄 버튼 누름
                 if(editText_chat.getText().toString().length() != 0) {
-                    final String now = new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date());
+                    final String now = new SimpleDateFormat("yyyy/MM/dd/HH/mm/ss").format(new Date());
                     //                    타입 텍스트 후 데이트, 안읽은양 방번호
       //내가 필요한건  recode_room = a; recode_amount = b; recode_who = c; recode_date = d; recode_text = e; recode_type = f; recode_read= g;
                     //타입 1로 고정해놓음 이미지 처리에 따라 바뀌어야함
@@ -239,7 +241,7 @@ public class ChatRoom extends Activity implements View.OnClickListener {
                             }catch (Exception e){e.printStackTrace(); Log.d("asd","채팅추가 에러 :"+e);}
                         }
                     }.start();
-                    adapter.addItem("", Intro.ID, editText_chat.getText().toString(), now, true,sumPeople-1,1);
+                    adapter.addItem("", Intro.ID, editText_chat.getText().toString(), now, true,sumPeople-1,1,Intro.ID);
                     adapter.notifyDataSetChanged();
 
                     editText_chat.setText("");

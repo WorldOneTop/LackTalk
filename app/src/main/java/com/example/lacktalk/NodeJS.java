@@ -65,7 +65,6 @@ public class NodeJS {//싱글톤 클래스
             char temp[] = new char[15];//길어도 15
             int tempLen = new FileReader(tempFile).read(temp);
             HOST = String.valueOf(temp,0,tempLen);
-            Log.d("asd",tempLen+"Ip : "+HOST);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -77,20 +76,25 @@ public class NodeJS {//싱글톤 클래스
         }
         /* default 설정 부분*/
         socket.io().timeout(2500);
-        socket.on("msg", onMessage);
+        socket.on("msg"+Intro.ID, onMessage);
         socket.on(Socket.EVENT_CONNECT,onConnect);
         socket.on(Socket.EVENT_DISCONNECT,onDisconnect);
         socket.on(Socket.EVENT_RECONNECT_ERROR,onDisconnect);
-        socket.on("onBoolean",onBoolean);   //불린형 체크만을 위해서
-        socket.on("userInfo",userInfo);
-        socket.on("getFriend",getFriend);
-        socket.on("addChatRoom",addChatRoom);
-        socket.on("initChatRoom",initChatRoom);
-        socket.on("addFriend",addFriend);
+        socket.on("onBoolean"+Intro.ID,onBoolean);   //불린형 체크만을 위해서
+        socket.on("userInfo"+Intro.ID,userInfo);
+        socket.on("getFriend"+Intro.ID,getFriend);
+        socket.on("addChatRoom"+Intro.ID,addChatRoom);
+        socket.on("initChatRoom"+Intro.ID,initChatRoom);
+        socket.on("addFriend"+Intro.ID,addFriend);
 
         socket.connect();
     }
     public static void sendJson(String key, JSONObject value){
+            try {
+                value.put("myID",Intro.ID);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         socket.emit(key,value);
     }
     public static boolean getRecvBoolean(){

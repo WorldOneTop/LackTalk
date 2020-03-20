@@ -95,7 +95,7 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener 
 
 
         init_ClickListener();
-
+        init_Chatting();
     }
 
     public void init_ClickListener() {
@@ -137,6 +137,9 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener 
             }
         });
 
+    }
+    public void init_Chatting(){
+        //여기서 데이터를 디비에 추가해서 뷰페이저에서 이를 적용시켜야함
     }
 
     @Override

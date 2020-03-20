@@ -41,7 +41,7 @@ public class Intro extends AppCompatActivity {
     public static final String FILENAME_LOGIN_PATH = "autoLoginInfo.txt";
     public static final String FILENAME_IP = "ip.txt";
     public static boolean showingIP = false;
-    public static String ID,PW;
+    public static String ID="",PW;
     public static DisplayMetrics outMetrics;
 
     Handler handler;
@@ -65,23 +65,23 @@ public class Intro extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
         init();
-        new Thread(){
-            @Override
-            public void run() {
-                List<db_User> a = AppDatabase.getInstance(Intro.this).myDao().getUserAll();
-//                List<db_Recode> b = AppDatabase.getInstance(Intro.this).myDao().getChatAll(roomNum);
-                List<db_Room> c = AppDatabase.getInstance(Intro.this).myDao().getRoomAll();
-                for(db_User aa : a)
-                    Log.d("asd"," "+aa);
-                Log.d("asd","###############################################################");
-//                for(db_Recode bb : b)
-//                    Log.d("asd"," "+bb);
+//        new Thread(){
+//            @Override
+//            public void run() {
+//                List<db_User> a = AppDatabase.getInstance(Intro.this).myDao().getUserAll();
+////                List<db_Recode> b = AppDatabase.getInstance(Intro.this).myDao().getChatAll(roomNum);
+//                List<db_Room> c = AppDatabase.getInstance(Intro.this).myDao().getRoomAll();
+//                for(db_User aa : a)
+//                    Log.d("asd"," "+aa);
 //                Log.d("asd","###############################################################");
-                for(db_Room cc : c)
-                    Log.d("asd"," "+cc);
-
-            }
-        }.start();
+////                for(db_Recode bb : b)
+////                    Log.d("asd"," "+bb);
+////                Log.d("asd","###############################################################");
+//                for(db_Room cc : c)
+//                    Log.d("asd"," "+cc);
+//
+//            }
+//        }.start();
 
         File file = new File(this.getFilesDir(), FILENAME);
         if (!file.exists()) {//키보드높이 저장한 파일이 없다면
@@ -146,9 +146,7 @@ public class Intro extends AppCompatActivity {
 
         //dp to px
         outMetrics = new DisplayMetrics();
-        Log.d("asd","       "+outMetrics.densityDpi);
         getWindowManager().getDefaultDisplay().getMetrics(outMetrics);
-        Log.d("asd","       "+outMetrics.densityDpi);
 
         eventConnect = new EventConnect() {
             @Override
@@ -171,15 +169,16 @@ public class Intro extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.d("asd", "커낵트호출"+(sendInfo == null));
-                        if (sendInfo != null)
+                        if (sendInfo != null) {
                             NodeJS.sendJson("login", sendInfo);
+
+                        }
                         handler.postDelayed(this, 500);
                     }
                 });
             }
         };
         NodeJS.getInstance().start(this); //공유할 nodejs객체 늦은 init 선언
-
     }
 
     private int getKeyboardHeight() {
@@ -241,7 +240,6 @@ public class Intro extends AppCompatActivity {
         eventBoolean = new EventBoolean() {
             @Override
             public void messageArrive() {//메시지받으면
-                Log.d("asd", "메시지 도착 호출"+NodeJS.getRecvBoolean());
                 rootLayout.setAlpha(1);
                 handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
                 eventBoolean = null;//메시지 사용종료
@@ -249,12 +247,14 @@ public class Intro extends AppCompatActivity {
                 if (NodeJS.getRecvBoolean()) {//그 결과가 참이라면
                     ID = id;
                     PW = pw;
+                    NodeJS.getInstance().setHostStart(NodeJS.HOST, Intro.this);
                     startActivity(intent);
                     finish();
                 } else {
                     Intent intent = new Intent(Intro.this, Login.class);
                     startActivity(intent);
                     finish();
+
                     handler.post(new Runnable() {
                         @Override
                         public void run() {

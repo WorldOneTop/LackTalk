@@ -136,6 +136,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                             public void run() {
                                 List<db_User> list = AppDatabase.getInstance(context).myDao().getUserAll();
                                 for (db_User user : list) {
+                                    if(user.id.equals(Intro.ID)) continue;
                                     adapterList.addItem(user.picture, user.name, user.msg, user.user_num, user.id);
                                 }
                                 handler.post(new Runnable() {
@@ -259,7 +260,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                                     try {
                                         JSONObject jsonObject = new JSONObject();
                                         jsonObject.put("me", Intro.ID);
-                                        jsonObject.put("friend", ((ItemList) adapterView.getAdapter().getItem(i)).getName());
+                                        jsonObject.put("friend", ((ItemList) adapterView.getAdapter().getItem(i)).getId());
                                         NodeJS.sendJson("deleteFriend", jsonObject);
                                     } catch (JSONException e) {
                                         e.printStackTrace();
