@@ -2,7 +2,7 @@
 <!--왼T.V는 오른T.V를 못넘고 오른T.V는 maxwidth가짐, 왼T.V는 오른쪽 닿기까지 커질수있음-->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="55dp"
+    android:layout_height="70dp"
     android:padding="5dp">
     <ImageView
         android:id="@+id/chatlist_profile"
@@ -69,6 +69,7 @@
         android:paddingStart="3dp"
         android:paddingEnd="3dp"
         android:paddingBottom="2dp"
+        android:paddingTop="2dp"
         android:textColor="#fff"
         android:textSize="13sp" />
 

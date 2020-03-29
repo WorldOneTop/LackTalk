@@ -47,10 +47,4 @@
             android:textColor="#fff"
             android:textSize="26sp" />
     </RelativeLayout>
-
-    <com.github.chrisbanes.photoview.PhotoView
-        android:id="@+id/profile_photoview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
 </RelativeLayout>

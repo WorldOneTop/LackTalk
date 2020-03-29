@@ -3,6 +3,7 @@ package com.example.lacktalk;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -34,6 +35,8 @@ public class NodeJS {//싱글톤 클래스
     public static JSONArray recvFriendList;
     public static JSONArray recvChatList;
     public static int recvInt;
+    public static JSONObject recvCreateRoom;
+    public static JSONObject recvChatting;
 
 
     private static class SingletonHolder {
@@ -56,11 +59,13 @@ public class NodeJS {//싱글톤 클래스
         HOST = str;
         start(context);
     }
-    public void start(Context context) {
+    public synchronized void start(Context context) {
+        if(socket != null && socket.connected())
+            socket.close();
         try {
             File tempFile =new File(context.getFilesDir(), Intro.FILENAME_IP);
             if(!tempFile.exists())
-                context.openFileOutput(Intro.FILENAME_IP, Context.MODE_PRIVATE).write("192.168.137.126".getBytes());
+                context.openFileOutput(Intro.FILENAME_IP, Context.MODE_PRIVATE).write("192.168.219.154".getBytes());
 
             char temp[] = new char[15];//길어도 15
             int tempLen = new FileReader(tempFile).read(temp);
@@ -86,6 +91,10 @@ public class NodeJS {//싱글톤 클래스
         socket.on("addChatRoom"+Intro.ID,addChatRoom);
         socket.on("initChatRoom"+Intro.ID,initChatRoom);
         socket.on("addFriend"+Intro.ID,addFriend);
+        socket.on("sendChatting"+Intro.ID,sendChatting);
+        socket.on("createRoomID"+Intro.ID,createRoomID);
+        socket.on("readChat",readChat);
+        socket.on("updateProfile",updateProfile);
 
         socket.connect();
     }
@@ -181,8 +190,64 @@ public class NodeJS {//싱글톤 클래스
     private Emitter.Listener addFriend = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            if(ChatList.viewPager_chatList[1] != null)
-                ChatList.viewPager_chatList[1].initFriendList();
+            JSONObject json = (JSONObject) args[0];
+            try {
+                AppDatabase.getInstance(ChatList.CONTEXT).myDao().insertUser(new db_User(json.getString("id"),json.getString("name"), json.getString("picture"), json.getString("msg")));
+                if(ChatList.viewPager_chatList[0] != null)
+                    ChatList.viewPager_chatList[0].initFriendList();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+    private Emitter.Listener sendChatting = new Emitter.Listener() {
+        @Override
+            public void call(Object... args) {
+            recvChatting = (JSONObject)args[0];
+            if(Intro.recvChatting != null)
+                Intro.recvChatting.messageReceive();
+
+        }
+    };
+    private Emitter.Listener createRoomID = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            recvCreateRoom = (JSONObject)args[0];
+            if(Intro.eventCreateRoom != null)
+                Intro.eventCreateRoom.messageArrive();
+        }
+    };
+    private Emitter.Listener readChat = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Cursor cursor = null;
+            try {
+                cursor = AppDatabase.getInstance(ChatList.CONTEXT).myDao().getAmount(((JSONObject)args[0]).getInt("roomNum"),((JSONObject)args[0]).getInt("start"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            while(cursor.moveToNext()){
+                AppDatabase.getInstance(ChatList.CONTEXT).myDao().setAmount(cursor.getInt(0),cursor.getInt(1)-1);
+            }
+            if(Intro.eventRead != null)
+                Intro.eventRead.messageRead();
+
+        }
+    };
+
+    private Emitter.Listener updateProfile = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject jsonObject = (JSONObject) args[0];
+            try {
+                if(AppDatabase.getInstance(ChatList.CONTEXT).myDao().isFriend(jsonObject.getString("id")) != 0){//있는사람일경우
+                    AppDatabase.getInstance(ChatList.CONTEXT).myDao().updateProfile(jsonObject.getString("id"),jsonObject.getString("img"));
+                    ChatList.viewPager_chatList[0].initFriendList();
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
         }
     };
 }

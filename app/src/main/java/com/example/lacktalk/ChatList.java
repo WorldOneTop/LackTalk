@@ -7,7 +7,9 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -16,6 +18,12 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class ChatList extends AppCompatActivity implements View.OnClickListener {
@@ -29,11 +37,8 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener 
     PagerAdapter pagerAdapter;
     private View upperLine1, upperLine2, upperLine3;
     public static ChatList_In_ViewPager[] viewPager_chatList;
-    private String myName, myPicture, myMsg;
     private long backKeyPressedTime;
-
-    ChatList() {
-    }
+    public static Context CONTEXT = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,14 +70,12 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener 
     public void init() {
         //밖의 레이아웃 및 변수 선언
         intent = getIntent();
-        myName = intent.getStringExtra("name");
-        myPicture = intent.getStringExtra("picture");
-        myMsg = intent.getStringExtra("msg");
 
         //페이지마다 보여질 뷰 및 변수 선언
         pager = findViewById(R.id.pager);
         viewPager_chatList = new ChatList_In_ViewPager[NUM_PAGE];//관리할수있게 따로 저장
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());//페이지 어뎁터매니저 선언
+        CONTEXT = this;
 
         //채팅방 아래 ( edittext, +버튼 등등 ) 뷰 선언 및 보이게
         View include_underbar = findViewById(R.id.include_underbar);
@@ -95,7 +98,7 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener 
 
 
         init_ClickListener();
-        init_Chatting();
+        init_reciver();
     }
 
     public void init_ClickListener() {
@@ -136,10 +139,49 @@ public class ChatList extends AppCompatActivity implements View.OnClickListener 
             public void onPageScrollStateChanged(int state) {
             }
         });
+        Intro.eventCreateRoom = new EventCreateRoom() {
+            @Override
+            public void messageArrive() {//방 추가
+                try {
+                    AppDatabase.getInstance(ChatList.CONTEXT).myDao().insertRoom(new db_Room(NodeJS.recvCreateRoom.getInt("room_num"), NodeJS.recvCreateRoom.getString(("room_user"))));
+                    viewPager_chatList[1].initChatList();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
 
     }
-    public void init_Chatting(){
-        //여기서 데이터를 디비에 추가해서 뷰페이저에서 이를 적용시켜야함
+
+    public static void room_out() {
+        init_reciver();
+        viewPager_chatList[1].initChatList();
+    }
+
+    public static void init_reciver() {
+        Intro.recvChatting = new RecvChatting() {
+            @Override
+            public void messageReceive() {//여긴 무조건 남이보낸것
+                try {
+                    JSONObject j = NodeJS.recvChatting;
+                    if(AppDatabase.getInstance(ChatList.CONTEXT).myDao().isFriend(j.getString("id")) == 0){//만약 친구사이가아니라면
+                        return;
+                    }
+                    db_Recode recode = new db_Recode(j.getInt("num"), j.getInt("amount"), j.getString("id"), j.getString("time"), j.getString("text"), j.getInt("type"), j.getInt("server"));
+                    if (AppDatabase.getInstance(CONTEXT).myDao().roomExists(j.getInt("num")) == 0) {//방이없었다면 방 DB추가
+                        AppDatabase.getInstance(ChatList.CONTEXT).myDao().insertRecode(new db_Recode(j.getInt("num"),0,Intro.ID,"0000.00.00.00.00","",1,0));
+                        NodeJS.sendJson("createRoomID", new JSONObject().put("num", j.getInt("num")));
+                    }
+                    AppDatabase.getInstance(ChatList.CONTEXT).myDao().insertRecode(recode);//채팅 디비에 넣고
+                    viewPager_chatList[1].updateItemRoom(j.getInt("num"), j.getString("text"), j.getString("time"));//채팅리스트 업데이트
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+
     }
 
     @Override

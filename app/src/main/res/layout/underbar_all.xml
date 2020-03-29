@@ -129,6 +129,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp">
             <ImageView
+                android:id="@+id/table_album"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

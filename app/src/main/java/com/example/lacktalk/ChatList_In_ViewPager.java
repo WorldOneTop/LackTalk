@@ -90,10 +90,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
 
         //리스트뷰 설정은 어뎁터에서
         adapterList = new AdapterList(isUserList);
-        if(isUserList)
-            listView = rootView.findViewById(R.id.listview_list);
-        else
-            listView = rootView.findViewById(R.id.listview_list);
+        listView = rootView.findViewById(R.id.listview_list);
         listView.setAdapter(adapterList);
 
         imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);//키보드 이벤트 발생용
@@ -121,11 +118,18 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                     fileReader.read(buf);
                     JSONObject jsonObject = new JSONObject(new String(buf));
                     fileReader.close();
+                    File file = new File(context.getFilesDir(), Intro.FILENAME_IMAGE_PATH);
+                    if (file.exists()) {
+                        FileReader image = new FileReader(file);
+                        char[] buf1 = new char[(int)file.length()];
+                        image.read(buf1);
+                        myPicture = String.valueOf(buf1);
+                    } else
+                        myPicture = "";
+                    Log.d("asd","existes"+myPicture);
 
                     myName = jsonObject.getString("name");
-                    myPicture = jsonObject.getString("picture");
                     myMsg = jsonObject.getString("msg");
-
                     if (isUserList) {
                         adapterList.addItem("", "", "", -1, "");
                         adapterList.addItem(myPicture, myName, myMsg, -1, "");//나자신도 추가해야함
@@ -136,7 +140,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                             public void run() {
                                 List<db_User> list = AppDatabase.getInstance(context).myDao().getUserAll();
                                 for (db_User user : list) {
-                                    if(user.id.equals(Intro.ID)) continue;
+                                    if (user.id.equals(Intro.ID)) continue;
                                     adapterList.addItem(user.picture, user.name, user.msg, user.user_num, user.id);
                                 }
                                 handler.post(new Runnable() {
@@ -161,11 +165,13 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         adapterList.clearData();
         new Thread() {
             @Override
-            public void run() {// ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date, SUM(re.recode_read), ro.room_user
+            public void run() {// ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date,ro.room_user
                 Cursor list = AppDatabase.getInstance(context).myDao().getChatLastList();
                 while (list.moveToNext()) {//한줄 만드는거
-                    int sumMan = list.getString(6).split("/").length;
-                    adapterList.addRoom(list.getString(0), list.getString(1), list.getString(2), list.getInt(3), list.getString(4), list.getInt(5),sumMan);
+                    int count = AppDatabase.getInstance(context).myDao().getListAmount(list.getInt(3));
+                    int sumMan = list.getString(5).split("/").length;
+                    String text = list.getInt(6) == 2 ? "사진을 보냈습니다." : list.getString(2);
+                    adapterList.addRoom(list.getString(0), list.getString(1), text, list.getInt(3), list.getString(4), count, sumMan, list.getString(5));
                 }
                 handler.post(new Runnable() {
                     @Override
@@ -177,6 +183,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
         }.start();
 
     }
+
 
     public void init_OnClick() {
         actionbar_search.setOnClickListener(this);
@@ -231,7 +238,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                                                     intent.putExtra("num", item.getPrimary_num());
                                                     intent.putExtra("position", i);
                                                     intent.putExtra("item", adapterList.getItem(i));
-                                                    if ((i != 0 && i != 2)||adapterList.getIsFilter()) {
+                                                    if ((i != 0 && i != 2) || adapterList.getIsFilter()) {
                                                         startActivity(intent);
                                                     }
 
@@ -248,6 +255,8 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                         builder.setItems(logclickbuilderItem, new DialogInterface.OnClickListener() {    // 목록 클릭시 설정
                             public void onClick(DialogInterface dialog, int index) {
                                 if (index == 0) {//대화방 추가를 클릭했을떄
+                                    String users = Intro.ID + "/" + ((ItemList) adapterView.getAdapter().getItem(i)).getId();
+                                    AddActivity.addRoom(context, users, true, users, 1);
 
                                 } else {//친구삭제를 클릭 했을 때
                                     final int pnum = ((ItemList) adapterView.getAdapter().getItem(i)).getPrimary_num();
@@ -266,7 +275,7 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                                         e.printStackTrace();
                                     }
 
-                                    Toast.makeText(context, ((ItemList) adapterView.getAdapter().getItem(i)).getName() + "님이 삭제되었습니다.", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(context, ((ItemList) adapterView.getAdapter().getItem(i)).getName() + "님의 메시지를 볼 수 없습니다.", Toast.LENGTH_LONG).show();
                                     ((AdapterList) adapterView.getAdapter()).deleteItem_num(pnum);
                                 }
                             }
@@ -283,7 +292,8 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
                     Intent intent = new Intent(context, ChatRoom.class);
                     intent.putExtra("name", adapterList.getItem(i).getName());      //방의 이름
                     intent.putExtra("pnum", adapterList.getItem(i).getPrimary_num());//방번호(서버)
-                    intent.putExtra("amount",adapterList.getItem(i).getAmount());//총 사람 수
+                    intent.putExtra("amount", adapterList.getItem(i).getAmount());//총 사람 수
+                    intent.putExtra("users", adapterList.getItem(i).getUsers());
                     startActivity(intent);
                     adapterList.getFilter().filter("");
                     searchLayout.setVisibility(View.GONE);
@@ -294,6 +304,15 @@ public class ChatList_In_ViewPager extends Fragment implements View.OnClickListe
 
     }
 
+    public void updateItemRoom(int pnum, String text, String date) {
+        adapterList.updateItemRoom(pnum, text, date);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                adapterList.notifyDataSetChanged();
+            }
+        });
+    }
 
     @Override
     public void onClick(View view) {

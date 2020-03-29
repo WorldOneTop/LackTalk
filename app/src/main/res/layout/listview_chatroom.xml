@@ -9,120 +9,164 @@
         android:id="@+id/layout_date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="5dp"
         android:orientation="horizontal"
-        android:visibility="gone"
-        android:layout_margin="5dp">
+        android:visibility="gone">
+
         <View
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:layout_weight="1"
-            android:background="#888"
+            android:layout_gravity="center"
             android:layout_marginRight="8dp"
-            android:layout_gravity="center"/>
+            android:layout_weight="1"
+            android:background="#888" />
+
         <TextView
             android:id="@+id/textview_date"
-            android:textSize="17sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textSize="17sp" />
+
         <View
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:layout_weight="1"
-            android:background="#888"
+            android:layout_gravity="center"
             android:layout_marginLeft="8dp"
-            android:layout_gravity="center"/>
+            android:layout_weight="1"
+            android:background="#888" />
     </LinearLayout>
 
-<RelativeLayout
-    android:id="@+id/listview_left"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_below="@id/layout_date">
-    <ImageView
-        android:id="@+id/item_profile"
-        android:layout_alignParentLeft="true"
-        android:layout_centerInParent="true"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:adjustViewBounds="true"
-        android:layout_margin="6dp"/>
+    <RelativeLayout
+        android:id="@+id/listview_left"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layout_date">
 
-    <TextView
-        android:id="@+id/item_name"
-        android:layout_toRightOf="@id/item_profile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
-        android:layout_marginStart="7dp"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
+        <RelativeLayout
+            android:id="@+id/only_for_layout3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/item_profile"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_margin="6dp"
+            android:adjustViewBounds="true" />
 
-    <TextView
-        android:id="@+id/item_text"
-        android:layout_below="@+id/item_name"
-        android:layout_toRightOf="@id/item_profile"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:maxWidth="200dp"
-        android:textSize="14sp"
-        android:layout_marginTop="5dp"
-        android:paddingRight="17dp"
-        android:paddingLeft="17dp"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:background="@drawable/leftchat"/>
+        <TextView
+            android:id="@+id/item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="7dp"
+            android:layout_marginTop="7dp"
+            android:layout_toRightOf="@id/item_profile"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/item_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/item_text"
-        android:layout_toEndOf="@+id/item_text"
-        android:textSize="13sp"
-        android:layout_marginLeft="3dp"
-        android:layout_marginRight="3dp"/>
-    <TextView
-        android:id="@+id/item_unread"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/item_time"
-        android:layout_alignStart="@id/item_time"
-        android:textColor="#f7e600"
-        android:textSize="13sp" />
-</RelativeLayout>
+
+            <TextView
+                android:id="@+id/item_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/item_name"
+                android:layout_marginTop="5dp"
+                android:layout_toRightOf="@id/item_profile"
+                android:background="@drawable/leftchat"
+                android:paddingLeft="17dp"
+                android:paddingTop="8dp"
+                android:paddingRight="17dp"
+                android:paddingBottom="8dp"
+                android:maxWidth="200dp"
+                android:textSize="17sp" />
+
+            <ImageView
+                android:id="@+id/item_imag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/item_name"
+                android:layout_toRightOf="@id/item_profile"
+                android:background="@drawable/leftchat"
+                android:paddingLeft="19dp"
+                android:paddingTop="8dp"
+                android:paddingRight="19dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone"
+                android:adjustViewBounds="true"
+                android:maxWidth="200dp"
+                android:maxHeight="400dp" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/item_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/only_for_layout3"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:layout_toEndOf="@+id/only_for_layout3"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/item_unread"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/item_time"
+            android:layout_alignStart="@id/item_time"
+            android:textColor="#f7e600"
+            android:textSize="13sp" />
+    </RelativeLayout>
+
     <RelativeLayout
         android:id="@+id/listview_right"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/layout_date">
-        <TextView
-            android:id="@+id/item_textR"
-            android:layout_alignParentRight="true"
-            android:layout_centerInParent="true"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:maxWidth="250dp"
-            android:layout_marginTop="5dp"
-            android:paddingRight="17dp"
-            android:paddingLeft="17dp"
-            android:textSize="16sp"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:background="@drawable/rightchat"/>
+
+            <TextView
+                android:id="@+id/item_textR"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/rightchat"
+                android:paddingLeft="17dp"
+                android:paddingTop="8dp"
+                android:paddingRight="17dp"
+                android:paddingBottom="8dp"
+                android:maxWidth="250dp"
+                android:textSize="17sp" />
+
+            <ImageView
+                android:id="@+id/item_imagR"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
+                android:background="@drawable/rightchat"
+                android:paddingLeft="17dp"
+                android:paddingTop="8dp"
+                android:paddingRight="17dp"
+                android:paddingBottom="8dp"
+                android:adjustViewBounds="true"
+                android:maxWidth="250dp"
+                android:maxHeight="400dp" />
 
         <TextView
             android:id="@+id/item_timeR"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/item_textR"
-            android:layout_toStartOf="@+id/item_textR"
-            android:textSize="13sp"
             android:layout_marginLeft="3dp"
             android:layout_marginRight="3dp"
-            android:layout_marginBottom="7dp"/>
+            android:layout_marginBottom="7dp"
+            android:layout_toStartOf="@+id/item_textR"
+            android:textSize="13sp" />
 
         <TextView
-            android:id="@+id/itemR_unread"
+            android:id="@+id/item_unreadR"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@id/item_timeR"

@@ -154,8 +154,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                                 if (imgPath.isEmpty())
                                     profile.setImageResource(R.drawable.defaultimg);
                                 else
-                                    Log.d("asd", NodeJS.recvUserInfo.getString("picture") + "      asdasd");
-//                                    Intro.eventUserInfo = null;//뒤로가기시에 적용함
+                                    profile.setImageBitmap(Intro.getBitmapFromString(imgPath));
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -194,6 +193,8 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
 
                     if (item.getImagePath().isEmpty())
                         ((ImageView) inflaterView.findViewById(R.id.horizon_img)).setImageResource(R.drawable.defaultimg);
+                    else
+                        ((ImageView) inflaterView.findViewById(R.id.horizon_img)).setImageBitmap(Intro.getBitmapFromString(item.getImagePath()));
                     ((TextView) inflaterView.findViewById(R.id.horizon_text)).setText(item.getName());
                     hashMap.put(item, inflaterView);
                     linearLayout.addView(inflaterView);
@@ -263,7 +264,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                                                     jsonObject.put("me", Intro.ID);
                                                     jsonObject.put("friend", id);
                                                     jsonObject.put("name", name.getText().toString());
-                                                    jsonObject.put("myname",ChatList_In_ViewPager.myName);
+                                                    jsonObject.put("myname", ChatList_In_ViewPager.myName);
                                                     NodeJS.sendJson("addFriend", jsonObject);
                                                     handler.post(new Runnable() {
                                                         @Override
@@ -296,42 +297,13 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 break;
             case R.id.add_resultImg://대화창 만들기 버튼 눌렀을때
                 Iterator iterator = hashMap.keySet().iterator();
-                String str = Intro.ID+"/";
-                String name = "";
+                String str = Intro.ID + "/";
+                int sum=0;
                 while (iterator.hasNext()) {
-                    ItemList itemList =(ItemList) iterator.next();
-                    str += itemList.getId() + "/";
-                    name +=itemList.getName() + "/";
+                    str += ((ItemList) iterator.next()).getId() + "/";sum++;
                 }
-                final String result = str;
-                final String resultName = name;
-                try {
-                    final JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("users", str);
-                    Intro.eventAddChatRoom = new EventAddChatRoom() {
-                        @Override
-                        public void messageArrive() {
-                            new Thread() {
-                                @Override
-                                public void run() {Log.d("asd","이게두번실행될리도없고말이지?");
-                                    Intro.eventAddChatRoom = null;
-                                    db_Recode db_recode = new db_Recode(NodeJS.recvInt,0,Intro.ID,new SimpleDateFormat("yyyy/MM/dd/HH/mm/ss").format(new Date()),"",1,0);
-                                    AppDatabase.getInstance(AddActivity.this).myDao().insertRecode(db_recode);
-                                    AppDatabase.getInstance(AddActivity.this).myDao().insertRoom(new db_Room(NodeJS.recvInt,resultName,result));
-                                    ChatList.viewPager_chatList[1].initChatList();
-                                    finish();
-                                }
-                            }.start();
-
-                        }
-                    };
-                    NodeJS.sendJson("addChatRoom", jsonObject);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
+                addRoom(this,str,true,str,sum);
+                finish();
                 break;
         }
     }
@@ -340,6 +312,46 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
     public void onBackPressed() {
         Intro.eventUserInfo = null;
         super.onBackPressed();
+    }
+    public static void addRoom(final Context context, final String text , final boolean isCreate, final String users, final int sumpeople){
+        try {
+            final JSONObject jsonObject = new JSONObject();
+            jsonObject.put("users", users);
+            Intro.eventAddChatRoom = new EventAddChatRoom() {
+                @Override
+                public void messageArrive() {
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            Intro.eventAddChatRoom = null;
+                            db_Recode db_recode = new db_Recode(NodeJS.recvInt, 0, Intro.ID, new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()), "", 1, 0);
+                            AppDatabase.getInstance(context).myDao().insertRecode(db_recode);
+                            AppDatabase.getInstance(context).myDao().insertRoom(new db_Room(NodeJS.recvInt, users));
+                            JSONObject jsonObject = new JSONObject();//room_num,amount,who,date,text,type
+                            try {
+                                jsonObject.put("a", NodeJS.recvInt);
+                                jsonObject.put("b", sumpeople);
+                                jsonObject.put("c", Intro.ID);
+                                jsonObject.put("d",  new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
+                                jsonObject.put("e", text);
+                                jsonObject.put("f", 1);
+                                jsonObject.put("g", users);
+                                jsonObject.put("isCreate",isCreate);
+                                NodeJS.sendJson("addChatRecode", jsonObject);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            ChatList.viewPager_chatList[1].initChatList();
+                        }
+                    }.start();
+                    Intro.eventAddChatRoom = null;
+                }
+            };
+            NodeJS.sendJson("addChatRoom", jsonObject);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
 
@@ -388,6 +400,8 @@ class AdapterAdd extends BaseAdapter implements Filterable {
 
         if (listViewItem.getImagePath().isEmpty())
             viewHolder.picture.setImageResource(R.drawable.defaultimg);
+        else
+            viewHolder.picture.setImageBitmap(Intro.getBitmapFromString(listViewItem.getImagePath()));
         viewHolder.name.setText(listViewItem.getName());
 //        viewHolder.checkBox.setOnCheckedChangeListener(changeListener);
         viewHolder.checkBox.setTag(listViewItem);

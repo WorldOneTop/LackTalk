@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,6 +41,8 @@ public class Login extends AppCompatActivity {
     Handler handler;
     JSONObject sendInfo = null;
     boolean isLogin;
+    boolean flag;
+    String picture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +55,7 @@ public class Login extends AppCompatActivity {
         goBack = findViewById(R.id.Login_goBack);
         rootLayout = findViewById(R.id.rootLayout_intro);
         handler = new Handler();
+        flag = true;
 
         signup.setTag(false);//회원가입누르지않았다는뜻
 
@@ -65,7 +69,7 @@ public class Login extends AppCompatActivity {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (!Intro.showingIP) {   //액티비티 안보이면
+                        if (!Intro.showingIP && flag) {   //액티비티 안보이면
                             Intro.selectIP_Dialog(Login.this);
                             Toast.makeText(Login.this, "서버와의 연결 상태를 확인해 주세요.", Toast.LENGTH_LONG).show();
                         }
@@ -194,19 +198,26 @@ public class Login extends AppCompatActivity {
                     final Intent intent = new Intent(Login.this, ChatList.class);
                     Intro.ID = id;
                     Intro.PW = SHA_str;
+                    flag = false;
                     NodeJS.getInstance().setHostStart(NodeJS.HOST, Login.this);
                     if (isLogin) {     //신규 사용자가 아니라면 정보 얻기위해서
                         try {
                             rootLayout.setAlpha(1);//msg가 들어온거 확인한시점
                             final JSONObject json_login = NodeJS.getMsg();
                             FileWriter fileWriter = new FileWriter(new File(Login.this.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
-                            fileWriter.write(json_login.toString());
+                            JSONObject jsonObject1 = new JSONObject().put("id", id);
+                            jsonObject1.put("pw", SHA_str).put("name", json_login.getString("name")).put("msg", json_login.getString("msg"));
+                            fileWriter.write(jsonObject1.toString());
                             fileWriter.flush();
                             fileWriter.close();
                             intent.putExtra("name", json_login.getString("name"));
-                            intent.putExtra("picture", json_login.getString("picture"));
                             intent.putExtra("msg", json_login.getString("msg"));
 
+                            FileWriter fileWriter1 =new  FileWriter(new File(Login.this.getFilesDir(), Intro.FILENAME_IMAGE_PATH));
+                            fileWriter1.write(json_login.getString("picture"));
+                            fileWriter1.flush();
+                            fileWriter1.close();
+                            picture = json_login.getString("picture");
                             handler.removeCallbacksAndMessages(null);//메시지 보내기 종료
                             Intro.eventConnect = null;
                             Intro.eventBoolean = null;
@@ -218,9 +229,9 @@ public class Login extends AppCompatActivity {
                                         AppDatabase.getInstance(getApplicationContext()).myDao().deleteRecodeAll();//기록목록초기화
                                         AppDatabase.getInstance(getApplicationContext()).myDao().deleteRoomAll();//방  목록초기화
                                         //자신의 아이디 추가
-                                        AppDatabase.getInstance(getApplicationContext()).myDao().insertUser(new db_User(id, json_login.getString("name"), json_login.getString("picture"), json_login.getString("msg")));
-                                        if (NodeJS.recvFriendList != null) {Log.d("asd","설마 널?");
-                                            for (int i = 0; i < NodeJS.recvFriendList.length(); i++) {Log.d("asd","값값값 "+NodeJS.recvFriendList.getJSONObject(i).toString());
+                                        AppDatabase.getInstance(getApplicationContext()).myDao().insertUser(new db_User(id, json_login.getString("name"), picture, json_login.getString("msg")));
+                                        if (NodeJS.recvFriendList != null) {
+                                            for (int i = 0; i < NodeJS.recvFriendList.length(); i++) {
                                                 db_User db_user = new db_User(((JSONObject) NodeJS.recvFriendList.get(i)).getString("id"),
                                                         ((JSONObject) NodeJS.recvFriendList.get(i)).getString("name_friend"),
                                                         ((JSONObject) NodeJS.recvFriendList.get(i)).getString("picture"),
@@ -235,22 +246,15 @@ public class Login extends AppCompatActivity {
                                                 try {
                                                     if (NodeJS.recvChatList != null) {
                                                         for (int i = 0; i < NodeJS.recvChatList.length(); i++) {
-                                                            db_Recode db_recode = new db_Recode(NodeJS.recvChatList.getJSONObject(i).getInt("num"), 0, Intro.ID, new SimpleDateFormat("yyyy/MM/dd/HH/mm/ss").format(new Date()), "", 1, 0);
+                                                            db_Recode db_recode = new db_Recode(NodeJS.recvChatList.getJSONObject(i).getInt("num"), 0, Intro.ID, new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()), "", 1, 0);
                                                             AppDatabase.getInstance(Login.this).myDao().insertRecode(db_recode);
-                                                            String resultName;
-                                                            String []temp = NodeJS.recvChatList.getJSONObject(i).getString("user").split("/");
-                                                            if(temp.length>2){//단톡방
-                                                                resultName = "단톡방 "+temp.length+"명  ";//디비생성할때짜르므로 두칸 띄워서
-                                                            }else{
-                                                                if(temp[0].equals(id))
-                                                                    resultName = AppDatabase.getInstance(getApplicationContext()).myDao().getNickname(temp[1])+"  ";
-                                                                else
-                                                                    resultName = AppDatabase.getInstance(getApplicationContext()).myDao().getNickname(temp[0])+"  ";
-                                                            }
-                                                            AppDatabase.getInstance(Login.this).myDao().insertRoom(new db_Room(NodeJS.recvChatList.getJSONObject(i).getInt("num"), resultName, NodeJS.recvChatList.getJSONObject(i).getString("user")));
+                                                            AppDatabase.getInstance(Login.this).myDao().insertRoom(new db_Room(NodeJS.recvChatList.getJSONObject(i).getInt("num"), NodeJS.recvChatList.getJSONObject(i).getString("user")));
                                                         }
                                                     }
-                                                }catch(Exception e){e.printStackTrace();Log.d("asd","채팅목록init에러"+e);}
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                    Log.d("asd", "채팅목록init에러" + e);
+                                                }
                                                 Intro.eventInitChatRoom = null;
                                             }
                                         };

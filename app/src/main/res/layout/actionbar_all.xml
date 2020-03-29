@@ -3,12 +3,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingRight="18dp"
-    android:paddingLeft="18dp">
+    android:id="@+id/rootLayout_actionbar">
     <RelativeLayout
         android:id="@+id/action_bar_friend"
         android:layout_width="match_parent"
         android:layout_height="55dp"
+        android:paddingRight="18dp"
+        android:paddingLeft="18dp"
         android:visibility="gone">
         <TextView
             android:id="@+id/action_bar_main"
@@ -51,6 +52,8 @@
         android:id="@+id/action_bar_chatRoom"
         android:layout_width="match_parent"
         android:layout_height="55dp"
+        android:paddingRight="18dp"
+        android:paddingLeft="18dp"
         android:visibility="gone">
     <ImageView
         android:id="@+id/icon_back"
@@ -100,5 +103,7 @@
     android:id="@+id/action_bar_line"
     android:layout_width="match_parent"
     android:layout_height="1dp"
+    android:paddingRight="10dp"
+    android:paddingLeft="10dp"
     android:background="#1A000000"/>
 </LinearLayout>

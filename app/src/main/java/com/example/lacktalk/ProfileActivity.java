@@ -5,7 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -24,15 +27,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStream;
 
 public class ProfileActivity extends AppCompatActivity {
-    PhotoView photoView;
     RelativeLayout rootLayout, normalLayout;
     ImageView picture;
     TextView name, message;
     Intent intent;
     boolean isMe;
-
+    String image;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,30 +55,21 @@ public class ProfileActivity extends AppCompatActivity {
         rootLayout = findViewById(R.id.profile_rootLayout);
         picture = findViewById(R.id.profile_picture);
         normalLayout = findViewById(R.id.profile_normalLayout);
-        photoView = findViewById(R.id.profile_photoview);
         name = findViewById(R.id.profile_name);
         message = findViewById(R.id.profile_message);
 
         name.setText(intent.getStringExtra("name"));
         message.setText(intent.getStringExtra("message"));
         isMe = intent.getBooleanExtra("isMe", false);
-//        intent.putExtra("name",name);
-//        intent.putExtra("message",message);
-//        intent.putExtra("picture",picture);
+        image =intent.getStringExtra("picture");
+        if(image !=null && !image.isEmpty())
+            picture.setImageBitmap(Intro.getBitmapFromString(image));
 
 
         if (isMe)
             initMe();
 
-        //클릭리스너 구현부
-        photoView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                normalLayout.setVisibility(View.GONE);
-                photoView.setImageResource(R.drawable.defaultimg);
-                photoView.setVisibility(View.VISIBLE);
-            }
-        });
+
         name.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -83,6 +77,14 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
 
+        rootLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(ProfileActivity.this,PhotoViewActivity.class);
+                intent.putExtra("picture",image);
+                startActivity(intent);
+            }
+        });
     }
 
     public void initMe() {//나를 누르면 편집모드로
@@ -107,9 +109,12 @@ public class ProfileActivity extends AppCompatActivity {
 
     //0은 이름, 1은 상메 2는 배사
     public void updateProfile(final int caseNum) {
-        if (caseNum == 2)
-            Toast.makeText(ProfileActivity.this, "추후에 함", Toast.LENGTH_LONG).show();
-
+        if (caseNum == 2) {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+            startActivityForResult(intent, 3);
+            return;
+        }
         final EditText editText = new EditText(ProfileActivity.this);
         editText.setHint(name.getText());
         final AlertDialog.Builder builder = new AlertDialog.Builder(ProfileActivity.this);
@@ -121,6 +126,7 @@ public class ProfileActivity extends AppCompatActivity {
                 .setPositiveButton("예",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
+
 //                                이미지 설정용 아니면 오버라이드 해서 없어질 내용
                             }
                         })
@@ -164,7 +170,7 @@ public class ProfileActivity extends AppCompatActivity {
                                 FileWriter fileWriter = new FileWriter(new File(ProfileActivity.this.getFilesDir(), Intro.FILENAME_LOGIN_PATH));
                                 fileWriter.write(jsonObject.toString());
                                 fileWriter.flush();
-                                fileWriter.close();
+                                fileWriter.close();Log.d("asd",jsonObject.toString());
                                 NodeJS.sendJson("userUpdate", jsonObject);
                                 ChatList.viewPager_chatList[0].initFriendList();
                             } else {
@@ -204,14 +210,33 @@ public class ProfileActivity extends AppCompatActivity {
 
     }
 
-
     @Override
-    public void onBackPressed() {
-        if (photoView.getVisibility() == View.VISIBLE) {
-            normalLayout.setVisibility(View.VISIBLE);
-            photoView.setVisibility(View.GONE);
-        } else
-            super.onBackPressed();
-    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 3) {
+            if (resultCode == RESULT_OK) {
+                try {
+                    InputStream in = getContentResolver().openInputStream(data.getData());
+                    Bitmap img = BitmapFactory.decodeStream(in);
+                    in.close();
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("id",Intro.ID);
+                    jsonObject.put("img",Intro.getStringFromBitmap(img));
+                    NodeJS.sendJson("updateProfile",jsonObject);
 
+                    FileWriter fileWriter = new FileWriter(new File(this.getFilesDir(), Intro.FILENAME_IMAGE_PATH));
+                    fileWriter.write(Intro.getStringFromBitmap(img));
+                    fileWriter.close();
+
+                    ChatList.viewPager_chatList[0].initFriendList();
+
+                    finish();
+                } catch (Exception e) {Log.d("asd","에러"+e);
+                e.printStackTrace();
+                }
+            } else if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(this, "사진 선택 취소", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 }

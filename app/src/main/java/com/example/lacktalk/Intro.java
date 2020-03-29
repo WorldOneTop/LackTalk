@@ -8,9 +8,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -22,6 +25,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -39,10 +43,12 @@ public class Intro extends AppCompatActivity {
     public static int HEIGHT_KEYBOARD;//키보드값 파일에서 따옴
     public static final String FILENAME = "keyboardHeight.txt";
     public static final String FILENAME_LOGIN_PATH = "autoLoginInfo.txt";
+    public static final String FILENAME_IMAGE_PATH = "autoLoginInfoImage.txt";
     public static final String FILENAME_IP = "ip.txt";
     public static boolean showingIP = false;
     public static String ID="",PW;
     public static DisplayMetrics outMetrics;
+
 
     Handler handler;
     ConstraintLayout rootLayout;
@@ -59,29 +65,32 @@ public class Intro extends AppCompatActivity {
     public static EventGetFriend eventGetFriend = null;
     public static EventAddChatRoom eventAddChatRoom = null;
     public static EventInitChatRoom eventInitChatRoom = null;
+    public static RecvChatting recvChatting = null;
+    public static EventCreateRoom eventCreateRoom= null;
+    public static EventRead eventRead = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
         init();
-//        new Thread(){
-//            @Override
-//            public void run() {
-//                List<db_User> a = AppDatabase.getInstance(Intro.this).myDao().getUserAll();
-////                List<db_Recode> b = AppDatabase.getInstance(Intro.this).myDao().getChatAll(roomNum);
-//                List<db_Room> c = AppDatabase.getInstance(Intro.this).myDao().getRoomAll();
-//                for(db_User aa : a)
-//                    Log.d("asd"," "+aa);
+        new Thread(){
+            @Override
+            public void run() {
+                List<db_User> a = AppDatabase.getInstance(Intro.this).myDao().getUserAll();
+//                List<db_Recode> b = AppDatabase.getInstance(Intro.this).myDao().getChatAll(roomNum);
+                List<db_Room> c = AppDatabase.getInstance(Intro.this).myDao().getRoomAll();
+                for(db_User aa : a)
+                    Log.d("asd"," "+aa);
+                Log.d("asd","###############################################################");
+//                for(db_Recode bb : b)
+//                    Log.d("asd"," "+bb);
 //                Log.d("asd","###############################################################");
-////                for(db_Recode bb : b)
-////                    Log.d("asd"," "+bb);
-////                Log.d("asd","###############################################################");
-//                for(db_Room cc : c)
-//                    Log.d("asd"," "+cc);
-//
-//            }
-//        }.start();
+                for(db_Room cc : c)
+                    Log.d("asd"," "+cc);
+
+            }
+        }.start();
 
         File file = new File(this.getFilesDir(), FILENAME);
         if (!file.exists()) {//키보드높이 저장한 파일이 없다면
@@ -178,7 +187,9 @@ public class Intro extends AppCompatActivity {
                 });
             }
         };
+
         NodeJS.getInstance().start(this); //공유할 nodejs객체 늦은 init 선언
+
     }
 
     private int getKeyboardHeight() {
@@ -214,9 +225,6 @@ public class Intro extends AppCompatActivity {
                         fileReader.read(buf);
                         JSONObject jsonObject = new JSONObject(new String(buf));
                         fileReader.close();
-                        intent.putExtra("name", jsonObject.getString("name"));
-                        intent.putExtra("picture", jsonObject.getString("picture"));
-                        intent.putExtra("msg", jsonObject.getString("msg"));
                         checkAutoLogin(jsonObject.getString("id"), jsonObject.getString("pw"), intent);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -351,8 +359,8 @@ public class Intro extends AppCompatActivity {
 
     }
     public static String dateTypeChange(String date,boolean is_diff_day){
-        String []now_arr = new SimpleDateFormat("yyyy/MM/dd/HH/mm").format(new Date()).split("/");
-        String[] str = date.split("/");
+        String []now_arr = new SimpleDateFormat("yyyy.MM.dd.HH.mm").format(new Date()).split("\\.");
+        String[] str = date.split("\\.");
         if(!now_arr[0].equals(str[0]))      //년도가 달랐을때
             return str[0]+"."+str[1]+"."+str[2];        //월 일이 달랐을때
         else if(is_diff_day || !now_arr[2].equals(str[2]) || !now_arr[1].equals(str[1]))
@@ -365,8 +373,21 @@ public class Intro extends AppCompatActivity {
                 return (temp != 0 ? temp : 12)+":"+str[4] + " am"  ;
         }
     }
-    public static int dpTopx(int dp){//dp값 넣으면 픽셀값으로 반환함
-        return  dp * (outMetrics.densityDpi/160);//160dpi가 1px=1dp
+
+    public static String getStringFromBitmap(Bitmap bitmapPicture) {
+        final int COMPRESSION_QUALITY = 100;
+        String encodedImage;
+        ByteArrayOutputStream byteArrayBitmapStream = new ByteArrayOutputStream();
+        bitmapPicture.compress(Bitmap.CompressFormat.PNG, COMPRESSION_QUALITY,
+                byteArrayBitmapStream);
+        byte[] b = byteArrayBitmapStream.toByteArray();
+        encodedImage = Base64.encodeToString(b, Base64.DEFAULT);
+        return encodedImage;
+    }
+    public static Bitmap getBitmapFromString(String stringPicture) {
+        byte[] decodedString = Base64.decode(stringPicture, Base64.DEFAULT);
+        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        return decodedByte;
     }
 }
 
@@ -395,4 +416,13 @@ interface EventInitChatRoom{
 }
 interface OnBackKeyPressM{
     boolean press();
+}
+interface RecvChatting{
+    void messageReceive();
+}
+interface EventCreateRoom{
+    void messageArrive();
+}
+interface EventRead{
+    void messageRead();
 }

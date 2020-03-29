@@ -60,18 +60,22 @@ class  db_Room{
 
     public db_Room(){}
     public db_Room(int a){room_num_server = a;}
-    public db_Room(int server_num,String name,String id){
+    public db_Room(int server_num,String users){
         room_num_server = server_num;
-        room_user = id;
-        String result = name.replace("/", ", ");
-        if(result.length()>35) {
-            result = result.substring(0,18);
-            result +="...";
-        }else {
-            result = result.substring(0,result.length()-2);
+        room_user = users;
+        String []temp = users.split("/");
+        String resultName;
+        if(temp.length>2){//단톡방
+            resultName = "단톡방 "+temp.length+"명";
+        }else{
+            if(temp[0].equals(Intro.ID))
+                resultName = AppDatabase.getInstance(ChatList.CONTEXT).myDao().getNickname(temp[1]);
+            else
+                resultName = AppDatabase.getInstance(ChatList.CONTEXT).myDao().getNickname(temp[0]);
         }
-        room_name = result;
+        room_name = resultName;
         room_alarm = 1;
+        startRead = 0;
     }
     @PrimaryKey(autoGenerate = true)
     public int room_num;    //내부디비에서만 쓰는 방번호
@@ -81,6 +85,7 @@ class  db_Room{
     public String room_picture; //방의 사진(아이콘)
     public String room_innerpicture; //방 내부 사진
     public int room_alarm;//알람설정되어있는지 1이면 알람 0이면 알람X
+    public int startRead;//읽기 시작해야하는곳(recode_)
 }
 @Entity
 class  db_Recode {
@@ -94,14 +99,13 @@ class  db_Recode {
                 ", recode_date='" + recode_date + '\'' +
                 ", recode_text='" + recode_text + '\'' +
                 ", recode_type=" + recode_type +
-                ", recode_read=" + recode_read +
                 '}';
     }
 
     public db_Recode(){}
     public db_Recode(int a){recode_num = a;}
     public db_Recode(int a,int b,String c,String d,String e,int f,int g){
-        recode_room = a; recode_amount = b; recode_who = c; recode_date = d; recode_text = e; recode_type = f; recode_read= g;
+        recode_room = a; recode_amount = b; recode_who = c; recode_date = d; recode_text = e; recode_type = f; recode_numServer=g;
     }
     @PrimaryKey(autoGenerate = true)
     public int recode_num;      //내부에서쓰일 채팅의 번호
@@ -111,7 +115,7 @@ class  db_Recode {
     public String recode_date;  //언제씀
     public String recode_text;  //뭐라씀
     public int recode_type;     //뭐를씀  글자면 1 이미지면 2 파일은 3
-    public int recode_read;     //안읽으면 1 더해서 총 안읽은 수 알아내기위해서
+    public int recode_numServer;//채팅의 서버번호
 }
 
 
@@ -158,14 +162,42 @@ interface MyDao {
     @Query("SELECT room_user FROM db_Room  WHERE room_num = :roomNum")
     String getInUser(int roomNum);                  //해당 방의 유저만 보기
 
-    @Query("SELECT ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date, SUM(re.recode_read), ro.room_user FROM db_Room as ro,db_Recode as re " +
+    @Query("SELECT user_num FROM db_user WHERE id = :id")
+    int isFriend(String id);
+
+    @Query("SELECT ro.room_picture, ro.room_name , re.recode_text, ro.room_num_server, re.recode_date, ro.room_user,re.recode_type FROM db_Room as ro,db_Recode as re " +
             "WHERE ro.room_num_server = re.recode_room group by ro.room_num_server ORDER BY re.recode_date DESC")
     Cursor getChatLastList();                 //전체적인 채팅방뷰 갖고오기(ChatList)
+    @Query("SELECT COUNT(room_num) FROM db_recode as re,db_room as ro WHERE re.recode_room = ro.room_num_server AND re.recode_num=:roomNum AND re.recode_numServer >ro.startRead ")
+    int getListAmount(int roomNum);//방의 안읽은 수 알고싶을때
+    @Query("SELECT picture FROM db_User WHERE  id=:id")
+    String getUser(String id);                   //친구 정보 가져오기
 
-    @Query("SELECT u.picture,u.name,re.recode_text,re.recode_date,re.recode_amount,re.recode_type,u.id FROM db_recode as re, db_User as u WHERE re.recode_who = u.id AND re.recode_room =:roomNum ORDER BY re.recode_date DESC")
+
+    @Query("SELECT u.picture,u.name,re.recode_text,re.recode_date,re.recode_amount,re.recode_type,u.id,recode_numServer FROM db_recode as re, db_User as u WHERE re.recode_who = u.id AND re.recode_room =:roomNum ORDER BY re.recode_date ")
     Cursor getChatInRoom(int roomNum);                 //해당 방에 필요한 채팅 정보
+    @Query("SELECT u.picture,u.name,re.recode_text,re.recode_date,re.recode_amount,re.recode_type,u.id,recode_numServer FROM db_recode as re, db_User as u WHERE re.recode_who = u.id AND re.recode_room =:roomNum ORDER BY re.recode_date DESC LIMIT 1")
+    Cursor getChatInRoomLast(int roomNum);                 //해당 방에 필요한 마지막 채팅 정보
     @Query("SELECT name FROM db_User WHERE id=:id")
     String getNickname(String id);
+    @Query("SELECT room_num_server FROM db_Room WHERE room_num_server = :roomNum")
+    int roomExists(int roomNum);
+    @Query("UPDATE db_Room SET startRead = :start WHERE room_num_server = :roomNUm")
+    void updateRead(int start,int roomNUm);
+    @Query("UPDATE db_User SET picture = :img WHERE id = :id")
+    void updateProfile(String id, String img);
+
+
+    @Query("SELECT startRead FROM db_Room WHERE room_num_server = :roomNum")
+    int getStartRead(int roomNum);
+    @Query("UPDATE db_room SET startRead = (SELECT recode_numServer FROM db_Recode WHERE recode_room = :roomNum ORDER BY recode_numServer DESC LIMIT 1) WHERE room_num_server = :roomNum")
+    void setListAmount(int roomNum);//방 들어갔을때 실행
+
+    @Query("SELECT recode_num,recode_amount FROM db_Recode WHERE recode_room = :roomNum AND recode_numServer >:start")
+    Cursor getAmount(int roomNum,int start);
+    @Query("UPDATE db_Recode SET recode_amount =:amount WHERE recode_num = :pNum")
+    void setAmount(int pNum,int amount);
+
 
     @Query("SELECT * FROM db_Room")
     List<db_Room> getRoomAll();

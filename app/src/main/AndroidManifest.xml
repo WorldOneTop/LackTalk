@@ -12,16 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ProfileActivity"></activity>
+        <activity android:name=".PhotoViewActivity"></activity>
+        <activity android:name=".ProfileActivity" />
         <activity android:name=".AddActivity" />
         <activity android:name=".Login" />
         <activity android:name=".ChatList" />
-
-        <service
-            android:name=".Alarm"
-            android:enabled="true"
-            android:exported="true" />
-
         <activity
             android:name=".ChatRoom"
             android:windowSoftInputMode="adjustResize" />
